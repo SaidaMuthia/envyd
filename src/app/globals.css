@@ -6,25 +6,35 @@
 }
 
 :root {
-  /* Warna background body sesuai desain (kebiruan sangat muda) */
+  /* Warna Background Utama (Biru Muda Halus) */
   --background: #F4F7FE; 
-  --foreground: #171717;
-  --card-bg: #FFFFFF;
-  --header-bg: #E9EEF9; /* Warna header sedikit lebih gelap dari bg */
+  --foreground: #2B3674; /* Warna teks utama (Dark Blue/Navy) */
+  --text-secondary: #A3AED0; /* Warna teks sekunder (Abu kebiruan) */
+  
+  /* Warna Header Pill */
+  --header-bg: #FFFFFF; /* Pada desain terbaru, header seringkali putih bersih atau sangat transparan */
+  
+  /* Aksen */
+  --accent-blue: #4318FF;
+  --accent-green: #05CD99;
+  --accent-yellow: #FFB547;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden; /* Mencegah horizontal scroll */
+  overflow-x: hidden;
 }
 
-/* Utilitas kustom untuk scrollbar jika perlu */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background-color: #CBD5E1;
+  border-radius: 20px;
 }

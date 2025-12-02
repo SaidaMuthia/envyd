@@ -1,7 +1,11 @@
 "use client";
-import { Bell, MapPin, Moon, Settings, Search } from "lucide-react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapPin, Search, Moon, Sun } from "lucide-react";
+import { useState } from "react";
 
 export default function Header() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
   return (
     <header className="flex flex-col lg:flex-row items-center justify-between bg-[#E9EEF9] py-3 px-6 rounded-[3rem] shadow-sm mb-8 gap-4 sticky top-4 z-50">
       {/* Logo & Location */}
@@ -32,19 +36,21 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Actions - Right */}
-      <div className="flex items-center gap-3">
-        <button className="w-10 h-10 flex items-center justify-center bg-black text-white rounded-full hover:bg-gray-800 transition shadow-md">
-            <Moon size={18} fill="white" />
+      {/* Actions - Right (Dark Mode Toggle Only) */}
+      <div className="flex items-center">
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className="relative w-16 h-9 bg-[#2B3674] rounded-full flex items-center px-1 transition-all duration-300 shadow-inner"
+        >
+          {/* Icons inside the track */}
+          <div className="absolute left-2 text-yellow-400"><Sun size={14} /></div>
+          <div className="absolute right-2 text-white"><Moon size={14} /></div>
+
+          {/* Moving Circle */}
+          <div className={`w-7 h-7 bg-white rounded-full shadow-md z-10 transform transition-transform duration-300 flex items-center justify-center ${isDarkMode ? 'translate-x-7' : 'translate-x-0'}`}>
+             {isDarkMode ? <Moon size={14} className="text-[#2B3674]" /> : <Sun size={14} className="text-yellow-500" />}
+          </div>
         </button>
-        <button className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-white rounded-full transition text-gray-600">
-            <Bell size={20} />
-        </button>
-        <button className="w-10 h-10 flex items-center justify-center bg-transparent hover:bg-white rounded-full transition text-gray-600">
-            <Settings size={20} />
-        </button>
-        {/* Avatar */}
-        <div className="w-10 h-10 bg-slate-700 rounded-full ml-2 cursor-pointer border-2 border-white shadow-sm"></div> 
       </div>
     </header>
   );
