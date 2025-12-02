@@ -6,11 +6,11 @@ import Header from "@/components/layout/Header";
 import StatCard from "@/components/dashboard/StatCard";
 import WeatherMain from "@/components/dashboard/WeatherMain";
 import AqiCard from "@/components/dashboard/AqiCard";
-import ForecastRow from "@/components/dashboard/ForecastRow"; // Komponen baru
+import ForecastCard from "@/components/dashboard/ForecastCard"; // Komponen baru
 import { WindCompass, FeelsLikeSlider, HumidityBars, VisibilityPyramid } from "@/components/dashboard/Visuals";
-import { Wind, Thermometer, Droplets, Eye, ArrowLeft } from "lucide-react";
+import { Wind, Thermometer, Droplets, Eye, ArrowLeft, X } from "lucide-react";
 
-// Import Map Dynamic
+// Import Map secara Dynamic
 const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
   ssr: false,
   loading: () => <div className="h-[350px] w-full bg-gray-200 animate-pulse rounded-[30px]">Loading Map...</div>
@@ -20,113 +20,157 @@ export default function Home() {
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next7">("today");
   const [isMapWide, setIsMapWide] = useState(false);
+  const [selectedForecastDay, setSelectedForecastDay] = useState<number | null>(null); // Untuk seleksi hari di Next 7
 
-  // --- CONTENT RENDERERS ---
+  // Data Mockup untuk Forecast
+  const forecastData = [
+    { day: "Tod", full: "Today", condition: "Sunny", temp: 32, rain: false },
+    { day: "Mon", full: "Monday", condition: "Cloudy", temp: 32, rain: true },
+    { day: "Tue", full: "Tuesday", condition: "Partly Cloudy", temp: 32, rain: true },
+    { day: "Wed", full: "Wednesday", condition: "Sunny", temp: 32, rain: true },
+    { day: "Thu", full: "Thursday", condition: "Partly Cloudy", temp: 32, rain: true },
+    { day: "Fri", full: "Friday", condition: "Sunny", temp: 32, rain: true },
+    { day: "Sat", full: "Saturday", condition: "Cloudy", temp: 32, rain: true },
+  ] as const;
 
-  // 1. Render Konten Kiri (Forecast / AQI / List 7 Hari)
+  // --- FUNGSI RENDER KONTEN ---
+
   const renderMainContent = () => {
-    // Jika Mode AQI
+    // 1. Tampilan AQI
     if (activeMode === 'aqi') {
         return <AqiCard />;
     }
 
-    // Jika Mode Forecast - Next 7 Days
+    // 2. Tampilan Next 7 Days (Grid Kartu Vertikal)
     if (timeView === 'next7') {
+        // Jika salah satu hari diklik, tampilkan detailnya (seperti Today view tapi datanya beda)
+        if (selectedForecastDay !== null) {
+            const dayData = forecastData[selectedForecastDay];
+            return (
+                 <div className="flex flex-col h-full gap-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <button onClick={() => setSelectedForecastDay(null)} className="p-2 bg-white rounded-full hover:bg-gray-100">
+                            <ArrowLeft size={20} />
+                        </button>
+                        <h3 className="font-bold text-[#2B3674] text-xl">{dayData.full} Forecast</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
+                        <WeatherMain /> {/* Anda bisa pass props data spesifik hari disini nanti */}
+                        {renderCommonStats(dayData.condition === 'Sunny' ? 16 : 20, dayData.temp)}
+                    </div>
+                 </div>
+            );
+        }
+
+        // Tampilan List Kartu (Default Next 7 Days)
         return (
-            <div className="bg-white p-6 rounded-[30px] shadow-[0_20px_25px_-5px_rgba(112,144,176,0.1)] h-full min-h-60 flex flex-col gap-3 overflow-y-auto max-h-[500px] scrollbar-thin">
-                <h3 className="font-bold text-[#2B3674] mb-2 px-2">Next 7 Days Forecast</h3>
-                <ForecastRow day="Monday" condition="Sunny" temp={32} />
-                <ForecastRow day="Tuesday" condition="Cloudy" temp={29} />
-                <ForecastRow day="Wednesday" condition="Rainy" temp={27} />
-                <ForecastRow day="Thursday" condition="Partly Cloudy" temp={30} />
-                <ForecastRow day="Friday" condition="Sunny" temp={33} />
-                <ForecastRow day="Saturday" condition="Rainy" temp={28} />
-                <ForecastRow day="Sunday" condition="Sunny" temp={31} />
+            <div className="w-full h-full min-h-60 overflow-x-auto pb-4">
+                <div className="flex gap-4 min-w-max">
+                    {forecastData.map((item, index) => (
+                        <ForecastCard 
+                            key={index}
+                            day={item.day}
+                            condition={item.condition}
+                            temp={item.temp}
+                            rainChance={item.rain ? 40 : undefined}
+                            isActive={false}
+                            onClick={() => setSelectedForecastDay(index)}
+                        />
+                    ))}
+                </div>
             </div>
         );
     }
 
-    // Jika Mode Forecast - Today / Tomorrow (Struktur Grid Sama, Data Beda)
+    // 3. Tampilan Today & Tomorrow (Layout Sama, Data Beda)
     const isTomorrow = timeView === 'tomorrow';
     
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
             {/* Card 1: Main Weather */}
             <div className="relative">
-                {isTomorrow && <div className="absolute top-0 right-0 bg-blue-100 text-blue-800 text-[10px] px-2 py-1 rounded-bl-xl rounded-tr-[30px] font-bold z-20">Tomorrow</div>}
+                {isTomorrow && (
+                    <div className="absolute -top-2 -right-2 bg-blue-100 text-blue-600 text-[10px] px-3 py-1 rounded-full font-bold z-20 shadow-sm">
+                        Tomorrow
+                    </div>
+                )}
                 <WeatherMain />
             </div>
+            
+            {/* Common Stats Cards */}
+            {renderCommonStats(isTomorrow ? 18 : 16, isTomorrow ? 29 : 30)}
+        </div>
+    );
+  };
 
-            {/* Card 2: Wind */}
-            <StatCard 
+  // Helper untuk render 3 kartu statistik (Wind, Feels Like, Humidity) agar tidak duplikasi kode
+  const renderCommonStats = (windSpeed: number, feelsLike: number) => (
+    <>
+        {/* Wind */}
+        <StatCard 
             title="Wind" 
             icon={<Wind size={18} className="text-[#4318FF]"/>}
             footer={
                 <div>
-                    <p className="font-bold text-[#2B3674] text-sm">
-                        {isTomorrow ? "18 km/h" : "16 km/h"} <span className="text-[#A3AED0] font-normal">| {isTomorrow ? "Barat Laut" : "Barat Daya"}</span>
-                    </p>
-                    <p className="text-[10px] text-[#A3AED0] mt-1 leading-tight">
-                        {isTomorrow ? "Angin sedikit kencang, hati-hati." : "Kondisi baik untuk berlayar."}
-                    </p>
+                    <p className="font-bold text-[#2B3674] text-sm">{windSpeed} km/h <span className="text-[#A3AED0] font-normal">| Barat Daya</span></p>
+                    <p className="text-[10px] text-[#A3AED0] mt-1 leading-tight">Kondisi baik untuk berlayar.</p>
                 </div>
             }
-            >
+        >
             <WindCompass />
-            </StatCard>
+        </StatCard>
 
-            {/* Card 3: Feels Like */}
-            <StatCard 
+        {/* Feels Like */}
+        <StatCard 
             title="Feels Like" 
             icon={<Thermometer size={18} className="text-[#4318FF]"/>}
             footer={
                 <div>
                     <div className="flex justify-between items-center mb-1">
-                        <p className="font-bold text-[#2B3674] text-sm">Feels like: {isTomorrow ? "28°" : "30°"}</p>
+                        <p className="font-bold text-[#2B3674] text-sm">Feels like {feelsLike}°</p>
                     </div>
-                    <p className="text-[10px] text-[#A3AED0] leading-tight">
-                        {isTomorrow ? "Suhu sedikit lebih rendah dari hari ini." : "Terasa nyaman karena angin sejuk."}
-                    </p>
+                    <p className="text-[10px] text-[#A3AED0] leading-tight">Terasa nyaman karena angin sejuk.</p>
                 </div>
             }
-            >
-            <FeelsLikeSlider value={isTomorrow ? 28 : 30} />
-            </StatCard>
+        >
+            <FeelsLikeSlider value={feelsLike} />
+        </StatCard>
 
-            {/* Card 4: Humidity */}
-            <StatCard 
+        {/* Humidity */}
+        <StatCard 
             title="Humidity" 
             icon={<Droplets size={18} className="text-[#4318FF]"/>}
             footer={
                 <div>
-                    <p className="font-bold text-[#2B3674] text-sm">{isTomorrow ? "80%" : "71%"} <span className="text-[#A3AED0] font-normal">| Moderat</span></p>
-                    <p className="text-[10px] text-[#A3AED0] mt-1 leading-tight">
-                        {isTomorrow ? "Kelembaban meningkat besok." : "Udara terasa segar hari ini."}
-                    </p>
+                    <p className="font-bold text-[#2B3674] text-sm">71% <span className="text-[#A3AED0] font-normal">| Moderat</span></p>
+                    <p className="text-[10px] text-[#A3AED0] mt-1 leading-tight">Udara terasa segar.</p>
                 </div>
             }
-            >
+        >
             <HumidityBars />
-            </StatCard>
-        </div>
-    );
-  };
+        </StatCard>
+    </>
+  );
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-[1920px] mx-auto font-sans bg-[#F4F7FE] relative">
       
-      {/* Overlay Mode Wide Map */}
+      {/* --- WIDE MAP OVERLAY (Fixed) --- */}
       {isMapWide && (
-        <div className="fixed inset-0 z-1000 bg-[#F4F7FE] p-6 flex flex-col animate-in fade-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-4">
-                <button onClick={() => setIsMapWide(false)} className="flex items-center gap-2 bg-white px-6 py-3 rounded-full shadow-md font-bold text-[#2B3674] hover:bg-gray-100 transition">
-                    <ArrowLeft size={20} /> Back to Dashboard
-                </button>
-                <div className="bg-white px-6 py-3 rounded-full shadow-sm font-bold text-[#2B3674]">
-                    Makassar Wide View
+        <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
+            <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-full text-blue-600">
+                        <ArrowLeft size={24} onClick={() => setIsMapWide(false)} className="cursor-pointer"/>
+                    </div>
+                    <span className="font-bold text-[#2B3674] text-lg">Wide Map View - Makassar</span>
                 </div>
+                <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition">
+                    <X size={24} className="text-gray-500" />
+                </button>
             </div>
-            <div className="flex-1 rounded-[30px] overflow-hidden shadow-2xl border-4 border-white">
+            <div className="flex-1 w-full max-w-[90%] mx-auto rounded-[40px] overflow-hidden shadow-2xl border-8 border-white relative bg-gray-200">
+                {/* Memaksa render ulang map saat wide mode agar layout Leaflet benar */}
                 <DashboardMap isExpanded={true} onExpand={() => setIsMapWide(false)} />
             </div>
         </div>
@@ -138,19 +182,19 @@ export default function Home() {
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 px-2 mt-6">
         <div className="flex gap-8 text-lg font-bold text-[#A3AED0] mb-4 md:mb-0">
           <button 
-            onClick={() => setTimeView('today')}
+            onClick={() => { setTimeView('today'); setSelectedForecastDay(null); }}
             className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#2B3674] border-b-2 border-[#2B3674]' : 'hover:text-[#2B3674]'}`}
           >
             Today
           </button>
           <button 
-            onClick={() => setTimeView('tomorrow')}
+            onClick={() => { setTimeView('tomorrow'); setSelectedForecastDay(null); }}
             className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#2B3674] border-b-2 border-[#2B3674]' : 'hover:text-[#2B3674]'}`}
           >
             Tomorrow
           </button>
           <button 
-            onClick={() => setTimeView('next7')}
+            onClick={() => { setTimeView('next7'); setSelectedForecastDay(null); }}
             className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'hover:text-[#2B3674] text-[#4318FF]'}`}
           >
             Next 7 days

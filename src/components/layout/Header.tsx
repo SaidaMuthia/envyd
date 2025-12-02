@@ -1,5 +1,4 @@
 "use client";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { MapPin, Search, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
@@ -12,8 +11,10 @@ export default function Header() {
       <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-start">
         <div className="flex items-center gap-2">
           {/* Logo Icon Placeholder */}
-          <div className="relative w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-             <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
+          <div className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+             <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
+             {/* Awan kecil di logo */}
+             <div className="absolute bottom-1 right-1 w-4 h-3 bg-gray-100 rounded-full opacity-80"></div>
           </div>
           <span className="font-bold text-gray-700 text-lg">EnvyD</span>
         </div>
@@ -25,7 +26,7 @@ export default function Header() {
       </div>
 
       {/* Search Bar - Center */}
-      <div className="flex-1 max-w-2xl w-full px-4">
+      <div className="flex-1 max-w-2xl w-full px-0 md:px-4">
         <div className="relative group">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500" size={18} />
           <input 
@@ -36,19 +37,24 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Actions - Right (Dark Mode Toggle Only) */}
+      {/* Actions - Right (Dark Mode Toggle Only - Fixed Design) */}
       <div className="flex items-center">
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="relative w-16 h-9 bg-[#2B3674] rounded-full flex items-center px-1 transition-all duration-300 shadow-inner"
+          className="relative w-20 h-10 bg-[#1B1B1E] rounded-full flex items-center px-1 transition-all duration-300 shadow-md border-2 border-white cursor-pointer"
+          aria-label="Toggle Dark Mode"
         >
-          {/* Icons inside the track */}
-          <div className="absolute left-2 text-yellow-400"><Sun size={14} /></div>
-          <div className="absolute right-2 text-white"><Moon size={14} /></div>
+          {/* Background Icons */}
+          <div className="absolute left-2.5 text-yellow-400"><Sun size={16} fill="currentColor" /></div>
+          <div className="absolute right-2.5 text-gray-400"><Moon size={16} fill="currentColor" /></div>
 
-          {/* Moving Circle */}
-          <div className={`w-7 h-7 bg-white rounded-full shadow-md z-10 transform transition-transform duration-300 flex items-center justify-center ${isDarkMode ? 'translate-x-7' : 'translate-x-0'}`}>
-             {isDarkMode ? <Moon size={14} className="text-[#2B3674]" /> : <Sun size={14} className="text-yellow-500" />}
+          {/* Moving Circle (Thumb) */}
+          <div className={`w-8 h-8 bg-white rounded-full shadow-sm z-10 transform transition-transform duration-300 flex items-center justify-center ${isDarkMode ? 'translate-x-10' : 'translate-x-0'}`}>
+             {isDarkMode ? (
+               <Moon size={16} className="text-black" fill="black" />
+             ) : (
+               <Sun size={16} className="text-yellow-500" fill="currentColor" />
+             )}
           </div>
         </button>
       </div>
