@@ -57,12 +57,12 @@ export function HumidityBars() {
 // Visualisasi Piramida Visibility
 export function VisibilityPyramid() {
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5 flex-grow py-2 w-full">
+    <div className="flex flex-col items-center justify-center gap-1.5 grow py-2 w-full">
         <div className="w-[40%] h-2 bg-[#F4F7FE] rounded-full"></div>
         <div className="w-[55%] h-2 bg-[#05CD99]/40 rounded-full"></div>
         <div className="w-[70%] h-2 bg-[#05CD99]/60 rounded-full"></div>
         <div className="w-[85%] h-2 bg-[#05CD99]/80 rounded-full"></div>
-        <div className="w-[100%] h-2 bg-[#05CD99] rounded-full shadow-sm"></div>
+        <div className="w-full h-2 bg-[#05CD99] rounded-full shadow-sm"></div>
     </div>
   );
 }
