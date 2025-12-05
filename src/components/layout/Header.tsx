@@ -12,21 +12,21 @@ export default function Header() {
       <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-start">
         
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
             <img 
               src="/images/Logo.svg" 
               alt="EnvyD Logo" 
               className="w-[50px] h-[50px] object-contain"
             />
-            <span className="font-bold text-[#2B3674] text-xl tracking-tight">EnvyD</span>
+            <span className="font-bold text-[#000000]">EnvyD</span>
         </div>
         
         {/* Lokasi */}
-        <div className="flex items-center gap-2 text-[#2B3674]">
+        <div className="flex items-center gap-2 text-[#000000]">
           <img 
             src="/images/Location_icon.svg" 
             alt="Location Icon"
-            className="w-[22px] h-[22px] object-contain" 
+            className="w-[22px] h-[22px] object-contain mt-1" 
           />
           <span className="font-bold text-lg">Makassar, Indonesia</span>
         </div>
