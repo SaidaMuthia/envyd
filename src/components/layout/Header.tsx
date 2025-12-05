@@ -1,63 +1,79 @@
 "use client";
-import { MapPin, Search, Moon, Sun } from "lucide-react";
+import { Search, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 
 export default function Header() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   return (
-    <header className="flex flex-col lg:flex-row items-center justify-between bg-[#E9EEF9] py-3 px-6 rounded-[3rem] shadow-sm mb-8 gap-4 sticky top-4 z-50">
-      {/* Logo & Location */}
-      <div className="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-start">
-        <div className="flex items-center gap-2">
-          {/* Logo Icon Placeholder */}
-          <div className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-             <div className="w-5 h-5 bg-yellow-400 rounded-full"></div>
-             {/* Awan kecil di logo */}
-             <div className="absolute bottom-1 right-1 w-4 h-3 bg-gray-100 rounded-full opacity-80"></div>
-          </div>
-          <span className="font-bold text-gray-700 text-lg">EnvyD</span>
+    <header className="flex flex-col lg:flex-row items-center justify-between bg-[#E5F0FFCC] py-[9px] pl-7 pr-12 rounded-[20px] shadow-sm mb-8 gap-6 sticky top-8 z-50 backdrop-blur-sm">
+      
+      {/* Bagian Kiri: Logo & Lokasi */}
+      <div className="flex items-center gap-8 w-full lg:w-auto justify-between lg:justify-start">
+        
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+            <img 
+              src="/images/Logo.svg" 
+              alt="EnvyD Logo" 
+              className="w-[50px] h-[50px] object-contain"
+            />
+            <span className="font-bold text-[#2B3674] text-xl tracking-tight">EnvyD</span>
         </div>
         
-        <div className="flex items-center gap-2 text-gray-800 font-bold text-sm md:text-base">
-          <MapPin size={18} fill="black" className="text-black" />
-          <span>Makassar, Indonesia</span>
+        {/* Lokasi */}
+        <div className="flex items-center gap-2 text-[#2B3674]">
+          <img 
+            src="/images/Location_icon.svg" 
+            alt="Location Icon"
+            className="w-[22px] h-[22px] object-contain" 
+          />
+          <span className="font-bold text-lg">Makassar, Indonesia</span>
         </div>
       </div>
 
-      {/* Search Bar - Center */}
+      {/* Bagian Tengah: Search Bar */}
       <div className="flex-1 max-w-2xl w-full px-0 md:px-4">
-        <div className="relative group">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500" size={18} />
+        <div className="relative group w-full">
+          {/* Icon Search */}
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#4318FF] transition-colors" size={20} />
+          
+          {/* Input Field */}
           <input 
             type="text" 
             placeholder="Search City..." 
-            className="w-full pl-12 pr-6 py-3 bg-white rounded-full text-sm font-medium text-gray-600 outline-none shadow-sm focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-400"
+            className="w-full pl-14 pr-6 py-3 bg-white rounded-full text-sm font-medium text-[#2B3674] placeholder:text-[#A3AED0] outline-none shadow-sm focus:ring-2 focus:ring-[#4318FF]/20 transition-all"
           />
         </div>
       </div>
 
-      {/* Actions - Right (Dark Mode Toggle Only - Fixed Design) */}
+      {/* Bagian Kanan: Tombol Dark Mode */}
       <div className="flex items-center">
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
-          className="relative w-20 h-10 bg-[#1B1B1E] rounded-full flex items-center px-1 transition-all duration-300 shadow-md border-2 border-white cursor-pointer"
+          className="relative w-[86px] h-[38px] bg-[#1B1B1E] rounded-full flex items-center px-1 transition-all duration-300 shadow-md cursor-pointer overflow-hidden"
           aria-label="Toggle Dark Mode"
         >
-          {/* Background Icons */}
-          <div className="absolute left-2.5 text-yellow-400"><Sun size={16} fill="currentColor" /></div>
-          <div className="absolute right-2.5 text-gray-400"><Moon size={16} fill="currentColor" /></div>
+          <div className="absolute left-3 text-yellow-400">
+            <Sun size={18} fill="currentColor" />
+          </div>
+          
+          <div className="absolute right-3 text-gray-400">
+            <Moon size={18} fill="currentColor" />
+          </div>
 
-          {/* Moving Circle (Thumb) */}
-          <div className={`w-8 h-8 bg-white rounded-full shadow-sm z-10 transform transition-transform duration-300 flex items-center justify-center ${isDarkMode ? 'translate-x-10' : 'translate-x-0'}`}>
+          <div 
+            className={`w-[30px] h-[30px] bg-white rounded-full shadow-lg z-10 flex items-center justify-center transition-transform duration-300 ease-out ${isDarkMode ? 'translate-x-12' : 'translate-x-0'}`}
+          >
              {isDarkMode ? (
-               <Moon size={16} className="text-black" fill="black" />
+               <Moon size={14} className="text-[#2B3674] fill-[#2B3674]" />
              ) : (
-               <Sun size={16} className="text-yellow-500" fill="currentColor" />
+               <Sun size={14} className="text-yellow-500 fill-yellow-500" />
              )}
           </div>
         </button>
       </div>
+
     </header>
   );
 }
