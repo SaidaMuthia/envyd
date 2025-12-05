@@ -89,11 +89,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-full">
             {/* Card 1: Main Weather */}
             <div className="relative">
-                {isTomorrow && (
-                    <div className="absolute -top-2 -right-2 bg-blue-100 text-blue-600 text-[10px] px-3 py-1 rounded-full font-bold z-20 shadow-sm">
-                        Tomorrow
-                    </div>
-                )}
+                {/* Kode badge Tomorrow sudah dihapus di sini */}
                 <WeatherMain />
             </div>
             
