@@ -26,7 +26,6 @@ export default function AqiCard() {
             <p className="text-[#1B1B1E] text-sm font-medium leading-relaxed">
                 Air quality is satisfactory, and air pollution poses little or no risk. 
             </p>
-            <p className="text-[10px] text-[#A3AED0] mt-1">(Air quality powered by Breezometer)</p>
          </div>
        </div>
        <p className="text-[10px] text-[#A3AED0] mt-4">Data from Station X</p>
