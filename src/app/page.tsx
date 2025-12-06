@@ -82,13 +82,20 @@ export default function Home() {
 
          {/* 2. Wind Card */}
          <StatCard 
-            icon={<Wind size={20} className="text-[#A3AED0]" />}
+            // GANTI ICON: Menggunakan custom SVG
+            icon={
+              <img 
+                src="/images/Wind_icon.svg" 
+                alt="Wind" 
+                className="w-5 h-5" // Ukuran disesuaikan (20px)
+              />
+            }
             title="Wind"
             footer={
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
-                        <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
+                        <span className="text-sm font-medium text-[#1B1B1E]">km/h</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
                         Angin berhembus dari arah Barat Daya. Kondisi cukup sejuk.
@@ -96,7 +103,6 @@ export default function Home() {
                 </div>
             }
          >
-            {/* HAPUS 'scale-90' dan sesuaikan margin agar pas di tengah */}
             <div className="mt-2 flex justify-center w-full">
                 <WindCompass /> 
             </div>
@@ -104,7 +110,14 @@ export default function Home() {
 
          {/* 3. Feels Like Card */}
          <StatCard 
-            icon={<Thermometer size={20} className="text-[#A3AED0]" />}
+            // GANTI ICON: Menggunakan custom SVG
+            icon={
+              <img 
+                src="/images/Feels_like_icon.svg" 
+                alt="Feels Like" 
+                className="w-5 h-5" 
+              />
+            }
             title="Feels Like"
             footer={
                 <div className="mt-auto w-full">
@@ -118,7 +131,6 @@ export default function Home() {
                 </div>
             }
          >
-            {/* Wrapper slider */}
             <div className="w-full mt-2 mb-2">
                 <FeelsLikeSlider value={data.feelsLike} />
             </div>
@@ -126,13 +138,20 @@ export default function Home() {
 
          {/* 4. Humidity Card */}
          <StatCard 
-            icon={<Droplets size={20} className="text-[#A3AED0]" />}
+            // GANTI ICON: Menggunakan custom SVG
+            icon={
+              <img 
+                src="/images/Humidity_icon.svg" 
+                alt="Humidity" 
+                className="w-5 h-5" 
+              />
+            }
             title="Humidity"
             footer={
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity}</span>
-                        <span className="text-sm font-bold text-[#1B1B1E]">%</span>
+                        <span className="text-sm font-medium text-[#1B1B1E]">%</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
                         Tingkat kelembapan {data.humidity > 70 ? "tinggi" : "moderat"}. Udara terasa {data.humidity > 70 ? "lengket" : "segar"}.
@@ -140,7 +159,6 @@ export default function Home() {
                 </div>
             }
          >
-            {/* Margin disesuaikan */}
             <div className="mt-3 mb-1 w-full">
                 <HumidityBars />
             </div>
