@@ -95,7 +95,7 @@ export default function Home() {
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
-                        <span className="text-sm font-medium text-[#1B1B1E]">km/h</span>
+                        <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
                         Angin berhembus dari arah Barat Daya. Kondisi cukup sejuk.
@@ -151,7 +151,7 @@ export default function Home() {
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity}</span>
-                        <span className="text-sm font-medium text-[#1B1B1E]">%</span>
+                        <span className="text-sm font-bold text-[#1B1B1E]">%</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
                         Tingkat kelembapan {data.humidity > 70 ? "tinggi" : "moderat"}. Udara terasa {data.humidity > 70 ? "lengket" : "segar"}.
@@ -270,20 +270,37 @@ export default function Home() {
 
       <Header />
 
-      {/* Tabs & Toggle */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 px-2 mt-6 gap-4">
-        <div className="flex gap-8 text-lg font-bold mb-4 md:mb-0">
-          <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
-          <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
-          <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
+      {/* --- RESTRUCTURED HEADER ROW (Tabs & Titles) --- */}
+      {/* Menggunakan Grid yang sama dengan konten utama agar alignment sempurna */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 px-1 mt-8 items-end">
+        
+        {/* BAGIAN KIRI (4/5): Tabs & Toggle */}
+        <div className="lg:col-span-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            
+            {/* Tabs (Align Left) */}
+            <div className="flex gap-8 text-lg font-bold">
+              <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
+              <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
+              <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
+            </div>
+
+            {/* Toggle (Align Right - Sejajar dengan Humidity Card nantinya) */}
+            <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
+              <button onClick={() => setActiveMode("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
+              <button onClick={() => setActiveMode("aqi")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Air Quality Index</button>
+            </div>
+
         </div>
-        <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
-          <button onClick={() => setActiveMode("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
-          <button onClick={() => setActiveMode("aqi")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Air Quality Index</button>
+
+        {/* BAGIAN KANAN (1/5): Judul Detail Cuaca Lainnya */}
+        <div className="lg:col-span-1 hidden lg:flex items-center pb-2">
+            <h2 className="text-xl font-bold text-[#1B2559]">Detail Cuaca Lainnya</h2>
         </div>
+
       </div>
 
-      {/* --- GRID UTAMA --- */}
+      {/* --- GRID KONTEN UTAMA --- */}
+      {/* mb-8 disesuaikan agar rapi */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 min-h-[280px]">
         
         {/* KOLOM KIRI (4/5) */}
@@ -298,8 +315,14 @@ export default function Home() {
         </div>
 
         {/* KOLOM KANAN (1/5) - Slider Detail */}
-        <div className="lg:col-span-1 h-full min-h-[280px]">
-            <WeatherDetailsSlider />
+        {/* Tambahkan flex flex-col h-full agar jika di mobile judulnya tetap ada di atas card */}
+        <div className="lg:col-span-1 h-full min-h-[280px] flex flex-col">
+            {/* Judul khusus Mobile (karena di grid atas di-hide saat mobile) */}
+            <h2 className="text-xl font-bold text-[#1B2559] mb-4 lg:hidden">Detail Cuaca Lainnya</h2>
+            
+            <div className="flex-1 h-full">
+                <WeatherDetailsSlider />
+            </div>
         </div>
 
       </div>

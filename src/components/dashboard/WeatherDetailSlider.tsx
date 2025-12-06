@@ -1,4 +1,4 @@
-//
+// src/components/dashboard/WeatherDetailSlider.tsx
 
 "use client";
 
@@ -13,34 +13,33 @@ export default function WeatherDetailsSlider() {
   const nextDetail = () => setDetailIndex((prev) => (prev === 2 ? 0 : prev + 1));
   const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 2 : prev - 1));
 
-  // Warna judul diseragamkan di sini
   const UNIFIED_TITLE_COLOR = "text-[#345B92]";
 
   const slides = [
     {
       id: "visibility",
       title: "Visibility",
-      color: UNIFIED_TITLE_COLOR, // Warna seragam
+      color: UNIFIED_TITLE_COLOR,
       icon: "/images/Visibility_icon.svg",
       component: <VisibilityPyramid />,
-      mainValue: "Visibility: 8 km",
+      mainValue: "8 km",
       desc: "Jarak pandang baik untuk berkendara. Waspada terhadap sedikit haze (kabut tipis) atau partikel udara.",
       scale: "scale-100" 
     },
     {
       id: "uv",
       title: "UV Index",
-      color: UNIFIED_TITLE_COLOR, // Warna seragam
+      color: UNIFIED_TITLE_COLOR,
       icon: "/images/UV_icon.svg",
       component: <UvGauge />,
       mainValue: "Sangat Tinggi",
-      desc: "Stay inside.",
-      scale: "scale-110" 
+      desc: "Gunakan tabir surya dan pelindung. Matahari sangat terik.",
+      scale: "scale-100" 
     },
     {
       id: "rain",
       title: "Curah Hujan",
-      color: UNIFIED_TITLE_COLOR, // Warna seragam
+      color: UNIFIED_TITLE_COLOR,
       icon: "/images/Curah_hujan_icon.svg",
       component: <RainChart />,
       isRainChart: true, 
@@ -50,77 +49,69 @@ export default function WeatherDetailsSlider() {
 
   const currentSlide = slides[detailIndex];
 
-  return (
-    <div className="h-full flex flex-col">
-      <h2 className="text-xl font-bold text-[#1B2559] mb-4">Detail Cuaca Lainnya</h2>
+  const footerContent = currentSlide.isRainChart ? null : (
+      <div className="mt-auto min-h-[60px] flex flex-col justify-end w-full">
+          <div className="text-2xl font-bold text-[#1B1B1E] mb-1">
+              {currentSlide.mainValue}
+          </div>
+          <p className="text-xs text-[#A3AED0] leading-relaxed line-clamp-2">
+              {currentSlide.desc}
+          </p>
+      </div>
+  );
 
-      <StatCard className="h-full relative overflow-hidden p-0!"> 
+  return (
+    <StatCard 
+        className="h-full relative overflow-hidden group" 
         
-        <div className="flex flex-col h-full w-full p-6 animate-in fade-in zoom-in duration-300">
-            
-            {/* --- 1. HEADER (DIPERBAIKI) --- */}
-            <div className="flex items-center gap-3 h-10 shrink-0">
-                {/* Menghapus bg-[#F4F7FE] dan rounded-full agar icon tidak ada background abu */}
-                <div className="w-8 h-8 flex items-center justify-center">
+        headerContent={
+            <div className="flex items-center gap-2">
+                <div className="w-5 h-5 flex items-center justify-center">
                     <img 
                         src={currentSlide.icon} 
                         alt={currentSlide.title} 
-                        className="w-6 h-6" // Icon sedikit diperbesar agar jelas
+                        className="w-5 h-5 object-contain"
                         onError={(e) => e.currentTarget.src = ''} 
                     />
                 </div>
-                {/* Warna teks diambil dari config yang sudah diseragamkan */}
                 <span className={`font-bold text-base ${currentSlide.color}`}>
                     {currentSlide.title}
                 </span>
             </div>
+        }
+        
+        footer={footerContent}
+    > 
+        {/* --- TOMBOL NAVIGASI CLEAN (TANPA BULATAN HOVER) --- */}
+        
+        {/* Tombol Kiri */}
+        <button 
+            onClick={prevDetail} 
+            // HAPUS: rounded-full, hover:bg-gray-100
+            // SISA: transition warna icon saja
+            className="absolute left-0.5 top-1/2 -translate-y-1/2 z-20 p-0.5 text-[#2B3674]/40 hover:text-[#2B3674] transition-all cursor-pointer"
+        >
+            <ChevronLeft size={16} />
+        </button>
 
-            {/* --- 2. VISUAL AREA --- */}
-            <div className="flex-1 flex items-center justify-between w-full my-2">
-                <button 
-                    onClick={prevDetail} 
-                    className="p-2 hover:bg-gray-100 rounded-full text-[#2B3674]/50 hover:text-[#2B3674] transition-colors cursor-pointer shrink-0"
-                >
-                    <ChevronLeft size={24} />
-                </button>
+        {/* Tombol Kanan */}
+        <button 
+            onClick={nextDetail} 
+            // HAPUS: rounded-full, hover:bg-gray-100
+            className="absolute right-0.5 top-1/2 -translate-y-1/2 z-20 p-0.5 text-[#2B3674]/40 hover:text-[#2B3674] transition-all cursor-pointer"
+        >
+            <ChevronRight size={16} />
+        </button>
 
-                <div className={`w-full flex justify-center items-center px-2 ${currentSlide.scale}`}>
+
+        {/* --- KONTEN VISUAL --- */}
+        <div className="flex flex-col h-full w-full animate-in fade-in zoom-in duration-300">
+            <div className="flex-1 flex items-center justify-center w-full my-2 relative">
+                <div className={`w-full flex justify-center items-center h-full overflow-visible ${currentSlide.scale}`}>
                     {currentSlide.component}
                 </div>
-
-                <button 
-                    onClick={nextDetail} 
-                    className="p-2 hover:bg-gray-100 rounded-full text-[#2B3674]/50 hover:text-[#2B3674] transition-colors cursor-pointer shrink-0"
-                >
-                    <ChevronRight size={24} />
-                </button>
             </div>
-
-            {/* --- 3. FOOTER INFO --- */}
-            <div className="mt-auto h-20 flex flex-col justify-end">
-                {currentSlide.isRainChart ? (
-                    <div className="flex justify-between text-[10px] text-[#A3AED0] font-bold uppercase tracking-wider px-4 w-full">
-                        <span>10AM</span>
-                        <span>11AM</span>
-                        <span>12AM</span>
-                        <span>01PM</span>
-                        <span>02PM</span>
-                        <span>03PM</span>
-                    </div>
-                ) : (
-                    <div className="w-full">
-                        <div className="text-2xl font-bold text-[#1B1B1E] mb-1">
-                            {currentSlide.mainValue}
-                        </div>
-                        <p className="text-xs text-[#A3AED0] leading-relaxed line-clamp-2">
-                            {currentSlide.desc}
-                        </p>
-                    </div>
-                )}
-            </div>
-
         </div>
-      </StatCard>
-    </div>
+    </StatCard>
   );
 }
