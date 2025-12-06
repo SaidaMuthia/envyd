@@ -1,31 +1,41 @@
 import { ReactNode } from "react";
 
 interface StatCardProps {
-  title: string;
+  title?: string;
   icon?: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
   className?: string;
+  headerContent?: ReactNode; // Tambahan untuk fleksibilitas header custom
 }
 
-export default function StatCard({ title, icon, children, footer, className = "" }: StatCardProps) {
+export default function StatCard({ title, icon, children, footer, className = "", headerContent }: StatCardProps) {
   return (
-    <div className={`bg-white p-5 rounded-[30px] shadow-[0_20px_25px_-5px_rgba(112,144,176,0.1)] flex flex-col justify-between h-full min-h-[220px] transition-all hover:shadow-lg ${className}`}>
-      {/* Header Card */}
-      <div className="flex items-center gap-2 text-[#A3AED0] mb-2">
-        {icon}
-        <span className="font-medium text-sm">{title}</span>
-      </div>
+    <div className={`bg-white rounded-[20px] p-6 shadow-sm flex flex-col justify-between h-full min-h-60 transition-all hover:shadow-md ${className}`}>
+      
+      {/* Header Area */}
+      {(title || icon || headerContent) && (
+        <div className="flex justify-between items-start mb-4">
+           {headerContent ? headerContent : (
+             <div className="flex items-center gap-2">
+                {icon}
+                <span className="font-bold text-[#A3AED0]">{title}</span>
+             </div>
+           )}
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="grow flex flex-col items-center justify-center w-full">
+      <div className="flex-1 flex items-center justify-center w-full py-2">
         {children}
       </div>
 
-      {/* Footer */}
-      <div className="mt-3">
-        {footer}
-      </div>
+      {/* Footer Area */}
+      {footer && (
+        <div className="mt-auto pt-2">
+          {footer}
+        </div>
+      )}
     </div>
   );
 }
