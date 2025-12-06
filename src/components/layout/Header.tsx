@@ -36,13 +36,13 @@ export default function Header() {
       <div className="flex-1 max-w-2xl w-full px-0 md:px-4">
         <div className="relative group w-full">
           {/* Icon Search */}
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#4318FF] transition-colors" size={20} />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2B3674] transition-colors" size={20} />
           
           {/* Input Field */}
           <input 
             type="text" 
             placeholder="Search City..." 
-            className="w-full pl-14 pr-6 py-3 bg-white rounded-full text-sm font-medium text-[#2B3674] placeholder:text-[#A3AED0] outline-none shadow-sm focus:ring-2 focus:ring-[#4318FF]/20 transition-all"
+            className="w-full pl-14 pr-6 py-3 bg-white rounded-full text-sm font-medium text-[#323544] placeholder:text-[#A3AED0] outline-none shadow-sm focus:ring-2 focus:ring-[#2B3674]/20 transition-all"
           />
         </div>
       </div>

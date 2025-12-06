@@ -49,7 +49,7 @@ export default function DashboardMap({ onExpand, isExpanded = false }: Dashboard
       {!isExpanded && (
         <button 
             onClick={() => router.push('/map')} // NAVIGASI KE HALAMAN BARU
-            className="absolute top-6 right-6 bg-white hover:bg-gray-50 text-[#2B3674] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg transition-all z-400 border border-[#F4F7FE] cursor-pointer"
+            className="absolute top-6 right-6 bg-white hover:bg-gray-50 text-[#1B2559] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg transition-all z-400 border border-[#F4F7FE] cursor-pointer"
         >
             View Wide
         </button>

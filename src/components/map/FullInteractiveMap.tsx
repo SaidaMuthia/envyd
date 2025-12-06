@@ -66,7 +66,7 @@ export default function FullInteractiveMap() {
       {/* --- TOMBOL BACK (Bulat di Kiri Atas) --- */}
       <button 
           onClick={() => router.push('/')}
-          className="absolute top-[110px] left-6 z-1100 bg-white w-10 h-10 rounded-full shadow-lg text-[#2B3674] hover:bg-gray-50 transition-all cursor-pointer flex items-center justify-center border border-white"
+          className="absolute top-[110px] left-6 z-1100 bg-white w-10 h-10 rounded-full shadow-lg text-[#1B2559] hover:bg-gray-50 transition-all cursor-pointer flex items-center justify-center border border-white"
       >
           <ArrowLeft size={20} />
       </button>
@@ -126,7 +126,7 @@ export default function FullInteractiveMap() {
             {/* Main Weather Card */}
             <div className="w-full">
                 <WeatherMain 
-                    title="Current Conditions"
+                    title="Today"
                     temp={weatherData.temp}
                     condition={weatherData.condition}
                     low={weatherData.low}
