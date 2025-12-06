@@ -1,28 +1,59 @@
-import { CloudSun } from "lucide-react";
+import { Cloud, CloudRain, CloudSun, Sun } from "lucide-react";
 
 interface WeatherMainProps {
-  title: string; // "Today" atau "Tomorrow"
+  title: string;
+  temp: number;
+  condition: string;
+  low: number;
+  high: number;
 }
 
-export default function WeatherMain({ title }: WeatherMainProps) {
+export default function WeatherMain({ title, temp, condition, low, high }: WeatherMainProps) {
+  
+  // Helper untuk memilih icon library berdasarkan kondisi
+  const getWeatherIcon = (cond: string) => {
+    // Icon size besar untuk tampilan utama
+    const size = 100; 
+    
+    // Normalisasi string kondisi agar tidak case-sensitive
+    const c = cond.toLowerCase();
+
+    if (c.includes("sun") || c.includes("clear")) {
+      return <Sun size={size} className="text-yellow-400 fill-yellow-400 drop-shadow-md" />;
+    } else if (c.includes("partly") || c.includes("cloud") && c.includes("sun")) {
+      return <CloudSun size={size} className="text-yellow-400 drop-shadow-md" />;
+    } else if (c.includes("rain") || c.includes("drizzle")) {
+      return <CloudRain size={size} className="text-blue-400 fill-blue-50 drop-shadow-md" />;
+    } else if (c.includes("cloud")) {
+      return <Cloud size={size} className="text-gray-400 fill-gray-100 drop-shadow-md" />;
+    } else {
+      // Default fallback
+      return <Sun size={size} className="text-yellow-400 fill-yellow-400 drop-shadow-md" />;
+    }
+  };
+
   return (
-    <div className="bg-white rounded-[20px] p-6 shadow-sm flex flex-col justify-between h-full min-h-60">
+    <div className="bg-white rounded-[20px] p-5 shadow-sm flex flex-col justify-between h-full min-h-52">
       {/* Header */}
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-2">
         <h3 className="text-xl font-bold border-b-2 border-[#1B2559] pb-1 text-[#1B2559]">{title}</h3>
         <span className="text-sm font-medium text-[#A3AED0]">12:00 PM</span>
       </div>
 
-      <div className="flex justify-center my-4">
-         <img src="/images/Weather_main_icon.svg" alt="Weather Icon" />
+      {/* Icon Area - Sekarang menggunakan Lucide Icon */}
+      <div className="flex flex-col items-center justify-center my-1 gap-1 flex-1">
+         <div className="transform hover:scale-110 transition-transform duration-300">
+            {getWeatherIcon(condition)}
+         </div>
+         <span className="text-[#A3AED0] font-medium text-sm mt-1">{condition}</span>
       </div>
 
       {/* Footer Info */}
       <div className="flex items-end justify-between mt-auto">
-        <span className="text-6xl font-bold text-[#1B1B1E] tracking-tight">32°</span>
+        <span className="text-6xl font-bold text-[#1B1B1E] tracking-tight">{temp}°</span>
         <div className="text-sm font-medium text-[#1B1B1E] text-right">
-          <div>Low: 28°</div>
-          <div>High: 34°</div>
+          <div>Low: {low}°</div>
+          <div>High: {high}°</div>
         </div>
       </div>
     </div>

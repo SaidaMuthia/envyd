@@ -6,13 +6,12 @@ import Header from "@/components/layout/Header";
 import StatCard from "@/components/dashboard/StatCard";
 import WeatherMain from "@/components/dashboard/WeatherMain";
 import AqiCard from "@/components/dashboard/AqiCard";
-import ForecastCard from "@/components/dashboard/ForecastCard";
-// Import Slider Component
+import ForecastCard from "@/components/dashboard/ForecastCard"; // Pastikan ini juga menggunakan Lucide
 import WeatherDetailsSlider from "@/components/dashboard/WeatherDetailSlider";
 
 // Visuals & Icons
 import { WindCompass, FeelsLikeSlider, HumidityBars } from "@/components/dashboard/Visuals";
-import { Wind, Thermometer, Droplets, ArrowLeft, X } from "lucide-react";
+import { Wind, Thermometer, Droplets, ArrowLeft, X, Sun, Cloud, CloudRain, CloudSun } from "lucide-react";
 
 // Import Map secara Dynamic
 const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
@@ -24,144 +23,226 @@ export default function Home() {
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next7">("today");
   const [isMapWide, setIsMapWide] = useState(false);
-  const [selectedForecastDay, setSelectedForecastDay] = useState<number | null>(null);
+  
+  const [selectedForecastDay, setSelectedForecastDay] = useState<number>(0);
 
-  // Data Mockup Forecast
   const forecastData = [
-    { day: "Tod", full: "Today", condition: "Sunny", temp: 32, rain: false },
-    { day: "Mon", full: "Monday", condition: "Cloudy", temp: 32, rain: true },
-    { day: "Tue", full: "Tuesday", condition: "Partly Cloudy", temp: 32, rain: true },
-    { day: "Wed", full: "Wednesday", condition: "Sunny", temp: 32, rain: true },
-    { day: "Thu", full: "Thursday", condition: "Partly Cloudy", temp: 32, rain: true },
-    { day: "Fri", full: "Friday", condition: "Sunny", temp: 32, rain: true },
-    { day: "Sat", full: "Saturday", condition: "Cloudy", temp: 32, rain: true },
+    { day: "Tod", full: "Today", condition: "Sunny", temp: 32, low: 28, high: 34, rain: false, wind: 16, humidity: 71, feelsLike: 30 },
+    { day: "Mon", full: "Monday", condition: "Cloudy", temp: 31, low: 26, high: 33, rain: true, wind: 12, humidity: 80, feelsLike: 33 },
+    { day: "Tue", full: "Tuesday", condition: "Partly Cloudy", temp: 29, low: 26, high: 31, rain: true, wind: 18, humidity: 65, feelsLike: 28 },
+    { day: "Wed", full: "Wednesday", condition: "Sunny", temp: 33, low: 29, high: 36, rain: false, wind: 10, humidity: 50, feelsLike: 35 },
+    { day: "Thu", full: "Thursday", condition: "Partly Cloudy", temp: 30, low: 27, high: 33, rain: true, wind: 22, humidity: 75, feelsLike: 29 },
+    { day: "Fri", full: "Friday", condition: "Sunny", temp: 34, low: 28, high: 35, rain: false, wind: 14, humidity: 45, feelsLike: 36 },
+    { day: "Sat", full: "Saturday", condition: "Cloudy", temp: 28, low: 25, high: 30, rain: true, wind: 20, humidity: 85, feelsLike: 27 },
+    { day: "Sun", full: "Sunday", condition: "Sunny", temp: 33, low: 29, high: 35, rain: false, wind: 9, humidity: 45, feelsLike: 36 },
   ] as const;
 
-  const renderMainContent = () => {
-    // 1. Tampilan AQI
-    if (activeMode === 'aqi') {
-        return <AqiCard />;
-    }
+  const handleTabChange = (view: "today" | "tomorrow" | "next7") => {
+    setTimeView(view);
+    if (view === 'next7') setSelectedForecastDay(0);
+  };
 
-    // 2. Tampilan Next 7 Days (Grid Kartu Horizontal)
-    if (timeView === 'next7' && selectedForecastDay === null) {
-        return (
-            <div className="w-full h-full min-h-60 overflow-x-auto pb-4">
-                <div className="flex gap-4 min-w-max">
-                    {forecastData.map((item, index) => (
-                        <ForecastCard 
-                            key={index}
-                            day={item.day}
-                            condition={item.condition}
-                            temp={item.temp}
-                            rainChance={item.rain ? 40 : undefined}
-                            isActive={false}
-                            onClick={() => setSelectedForecastDay(index)}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
+  // Helper Icon yang KONSISTEN dengan WeatherMain
+  const getIcon = (condition: string, size: number = 64) => {
+    const c = condition.toLowerCase();
+    
+    if (c.includes("sun") || c.includes("clear")) {
+      return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
+    } else if (c.includes("partly") || c.includes("cloud") && c.includes("sun")) {
+      return <CloudSun size={size} className="text-yellow-400" />;
+    } else if (c.includes("rain") || c.includes("drizzle")) {
+      return <CloudRain size={size} className="text-blue-400 fill-blue-50" />;
+    } else if (c.includes("cloud")) {
+      return <Cloud size={size} className="text-gray-400 fill-gray-100" />;
+    } else {
+      return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
     }
+  };
 
-    // 3. Tampilan Today & Tomorrow (Layout 5 Kolom)
-    const mainTitle = timeView === 'tomorrow' ? "Tomorrow" : "Today";
-    const displayTitle = selectedForecastDay !== null ? forecastData[selectedForecastDay].full : mainTitle;
+  // --- RENDERER LOGIC ---
+
+  // 1. Tampilan Standard (Today / Tomorrow)
+  const renderStandardDashboard = () => {
+    const isTomorrow = timeView === 'tomorrow';
+    const data = isTomorrow ? forecastData[1] : forecastData[0];
+    const title = isTomorrow ? "Tomorrow" : "Today";
 
     return (
-        <div className="flex flex-col gap-6">
-            
-            {/* Tombol Back jika sedang melihat detail dari Next 7 Days */}
-            {selectedForecastDay !== null && (
-               <button onClick={() => setSelectedForecastDay(null)} className="flex items-center gap-2 text-[#2B3674] font-bold hover:underline w-fit">
-                  <ArrowLeft size={20} /> Back to 7 Days
-               </button>
-            )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full min-h-[280px]">
+         {/* 1. Main Weather Card */}
+         <div className="h-full">
+            <WeatherMain 
+                title={title} 
+                temp={data.temp} 
+                condition={data.condition}
+                low={data.low}
+                high={data.high}
+            />
+         </div>
 
-            {/* MAIN GRID: 5 KOLOM (Sesuai Desain) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                
-                {/* KOLOM 1: MAIN WEATHER */}
-                <div className="h-full">
-                    <WeatherMain title={displayTitle} />
+         {/* 2. Wind Card */}
+         <StatCard 
+            icon={<Wind size={20} className="text-[#A3AED0]" />}
+            title="Wind"
+            footer={
+                <div className="mt-auto">
+                    <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
+                        <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
+                    </div>
+                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
+                        Angin berhembus dari arah Barat Daya. Kondisi cukup sejuk.
+                    </p>
                 </div>
-
-                {/* KOLOM 2: WIND */}
-                <StatCard 
-                    icon={<Wind size={20} className="text-[#A3AED0]" />}
-                    title="Wind"
-                    footer={
-                        <div className="mt-2">
-                            <div className="text-lg font-bold text-[#1B1B1E] mb-1">16 km/h <span className="text-sm font-normal text-[#A3AED0]">dari Barat Daya</span></div>
-                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
-                                Kondisi baik untuk berlayar dan suasana pantai yang sejuk.
-                            </p>
-                        </div>
-                    }
-                >
-                    <WindCompass /> 
-                </StatCard>
-
-                {/* KOLOM 3: FEELS LIKE */}
-                <StatCard 
-                    icon={<Thermometer size={20} className="text-[#A3AED0]" />}
-                    title="Feels Like"
-                    footer={
-                        <div className="mt-4">
-                            <div className="flex justify-between items-center text-sm font-bold text-[#1B1B1E] mb-1">
-                                <span>Feels like: 30°</span>
-                                <span>Temp: 30°</span>
-                            </div>
-                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
-                                Meskipun suhu aktual tinggi, kombinasi angin membuat udara terasa lebih nyaman.
-                            </p>
-                        </div>
-                    }
-                >
-                    <FeelsLikeSlider value={30} />
-                </StatCard>
-
-                {/* KOLOM 4: HUMIDITY */}
-                <StatCard 
-                    icon={<Droplets size={20} className="text-[#A3AED0]" />}
-                    title="Humidity"
-                    footer={
-                        <div className="mt-2">
-                            <div className="text-lg font-bold text-[#1B1B1E] mb-1">Humidity: 71%</div>
-                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
-                                Tingkat kelembapan moderat 71. Udara terasa segar.
-                            </p>
-                        </div>
-                    }
-                >
-                    <HumidityBars />
-                </StatCard>
-
-                {/* KOLOM 5: DETAIL CUACA LAINNYA (SLIDER) */}
-                <div className="h-full">
-                    <WeatherDetailsSlider />
-                </div>
+            }
+         >
+            {/* HAPUS 'scale-90' dan sesuaikan margin agar pas di tengah */}
+            <div className="mt-2 flex justify-center w-full">
+                <WindCompass /> 
             </div>
+         </StatCard>
+
+         {/* 3. Feels Like Card */}
+         <StatCard 
+            icon={<Thermometer size={20} className="text-[#A3AED0]" />}
+            title="Feels Like"
+            footer={
+                <div className="mt-auto w-full">
+                     <div className="flex justify-between items-end mb-1 text-[#1B1B1E]">
+                        <span className="text-xs font-bold">Feels like: {data.feelsLike}°</span>
+                        <span className="text-xs font-bold">Temp: {data.temp}°</span>
+                     </div>
+                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
+                        Kelembapan membuat udara terasa {data.feelsLike > data.temp ? "lebih panas" : "lebih dingin"} dari suhu aktual.
+                     </p>
+                </div>
+            }
+         >
+            {/* Wrapper slider */}
+            <div className="w-full mt-2 mb-2">
+                <FeelsLikeSlider value={data.feelsLike} />
+            </div>
+         </StatCard>
+
+         {/* 4. Humidity Card */}
+         <StatCard 
+            icon={<Droplets size={20} className="text-[#A3AED0]" />}
+            title="Humidity"
+            footer={
+                <div className="mt-auto">
+                    <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity}</span>
+                        <span className="text-sm font-bold text-[#1B1B1E]">%</span>
+                    </div>
+                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">
+                        Tingkat kelembapan {data.humidity > 70 ? "tinggi" : "moderat"}. Udara terasa {data.humidity > 70 ? "lengket" : "segar"}.
+                    </p>
+                </div>
+            }
+         >
+            {/* Margin disesuaikan */}
+            <div className="mt-3 mb-1 w-full">
+                <HumidityBars />
+            </div>
+         </StatCard>
+      </div>
+    );
+  };
+
+  // 2. Tampilan Next 7 Days (Horizontal Accordion)
+  const renderNext7Days = () => {
+    return (
+      <div className="w-full overflow-x-auto pb-4 pt-2 px-1 scrollbar-hide h-full min-h-[280px]">
+        <div className="flex gap-4 h-[280px] min-w-max">
+            
+            {forecastData.map((item, index) => {
+                const isSelected = selectedForecastDay === index;
+
+                return (
+                    <div 
+                        key={index}
+                        onClick={() => setSelectedForecastDay(index)}
+                        // ... (className container tetap sama)
+                        className={`
+                            relative rounded-[30px] p-5 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] cursor-pointer shadow-sm border border-transparent
+                            flex flex-col overflow-hidden
+                            ${isSelected 
+                                ? 'w-[320px] bg-white ring-2 ring-blue-50 z-10' 
+                                : 'w-[110px] bg-[#E9EDF7] hover:bg-white hover:shadow-md'
+                            }
+                        `}
+                    >
+                        {isSelected ? (
+                            // --- LAYOUT EXPANDED ---
+                            <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-2 duration-700 delay-100">
+                                <div className="flex justify-between items-start w-full">
+                                    <h3 className="text-2xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1 whitespace-nowrap">
+                                        {item.full}
+                                    </h3>
+                                    <span className="text-xs font-bold text-[#A3AED0] mt-1.5 ml-2">12:00 PM</span>
+                                </div>
+
+                                <div className="flex-1 flex items-center justify-start pl-4 py-2">
+                                    {getIcon(item.condition, 72)} 
+                                </div>
+
+                                <div className="flex items-end justify-between mt-auto w-full">
+                                    <div>
+                                        <span className="text-5xl font-bold text-[#1B1B1E] tracking-tighter">{item.temp}°</span>
+                                        <div className="text-xs font-bold text-[#A3AED0] mt-1">
+                                            Low: {item.low}° <br/> High: {item.high}°
+                                        </div>
+                                    </div>
+                                    
+                                    {/* --- PERBAIKAN DI SINI --- */}
+                                    {/* Menggunakan flex-col, justify-center, dan text-center agar pas di tengah kotak */}
+                                    <div className="flex flex-col justify-center items-center text-[10px] font-medium text-[#1B1B1E] bg-gray-50 px-3 py-2 rounded-xl min-w-[100px] gap-1.5 shadow-sm">
+                                        <p>Wind: {item.wind} mph</p>
+                                        <p>Feels like: {item.feelsLike}°</p>
+                                        <p>Humidity: {item.humidity}%</p>
+                                        <p>Visibility: 8 km</p>
+                                    </div>
+
+                                </div>
+                            </div>
+                        ) : (
+                           // ... (Layout compact tetap sama)
+                           <div className="flex flex-col justify-between h-full items-center w-full animate-in fade-in duration-500">
+                                <div className="w-full flex justify-center">
+                                    <span className="text-xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1">
+                                        {item.day}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                                    <div className="drop-shadow-sm scale-90">
+                                        {getIcon(item.condition, 48)}
+                                    </div>
+                                </div>
+
+                                <div className="text-4xl font-medium text-[#1B1B1E] text-center mb-2">
+                                    {item.temp}°
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>
+      </div>
     );
   };
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-[1920px] mx-auto font-sans bg-[#F4F7FE] relative text-[#1B2559]">
       
-      {/* WIDE MAP OVERLAY */}
+      {/* Map Overlay */}
       {isMapWide && (
         <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
             <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-                        <ArrowLeft size={24} onClick={() => setIsMapWide(false)} className="cursor-pointer"/>
-                    </div>
-                    <span className="font-bold text-[#2B3674] text-lg">Wide Map View</span>
-                </div>
-                <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition">
-                    <X size={24} className="text-gray-500" />
-                </button>
+                <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition"><ArrowLeft size={24}/></button>
+                <span className="font-bold text-[#2B3674] text-lg">Wide Map View</span>
+                <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition"><X size={24}/></button>
             </div>
             <div className="flex-1 w-full max-w-[90%] mx-auto rounded-[40px] overflow-hidden shadow-2xl border-8 border-white relative bg-gray-200">
                 <DashboardMap isExpanded={true} onExpand={() => setIsMapWide(false)} />
@@ -171,47 +252,38 @@ export default function Home() {
 
       <Header />
 
-      {/* Navigation & Tabs */}
+      {/* Tabs & Toggle */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 px-2 mt-6 gap-4">
         <div className="flex gap-8 text-lg font-bold mb-4 md:mb-0">
-          <button 
-            onClick={() => { setTimeView('today'); setSelectedForecastDay(null); }}
-            className={`transition px-1 pb-1 ${timeView === 'today' && selectedForecastDay === null ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-          >
-            Today
-          </button>
-          <button 
-            onClick={() => { setTimeView('tomorrow'); setSelectedForecastDay(null); }}
-            className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-          >
-            Tomorrow
-          </button>
-          <button 
-            onClick={() => { setTimeView('next7'); setSelectedForecastDay(null); }}
-            className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-          >
-            Next 7 days
-          </button>
+          <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
+          <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
+          <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
         </div>
-
         <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
-          <button 
-            onClick={() => setActiveMode("forecast")}
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0] hover:bg-gray-50'}`}
-          >
-            Forecast
-          </button>
-          <button 
-            onClick={() => setActiveMode("aqi")}
-            className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0] hover:bg-gray-50'}`}
-          >
-            Air Quality Index
-          </button>
+          <button onClick={() => setActiveMode("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
+          <button onClick={() => setActiveMode("aqi")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Air Quality Index</button>
         </div>
       </div>
 
-      <div className="mb-12">
-        {renderMainContent()}
+      {/* --- GRID UTAMA --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 min-h-[280px]">
+        
+        {/* KOLOM KIRI (4/5) */}
+        <div className="lg:col-span-4 h-full">
+            {activeMode === 'aqi' ? (
+                <AqiCard />
+            ) : (
+                <>
+                    {timeView === 'next7' ? renderNext7Days() : renderStandardDashboard()}
+                </>
+            )}
+        </div>
+
+        {/* KOLOM KANAN (1/5) - Slider Detail */}
+        <div className="lg:col-span-1 h-full min-h-[280px]">
+            <WeatherDetailsSlider />
+        </div>
+
       </div>
 
       <section className="mt-8">
