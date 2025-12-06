@@ -7,10 +7,10 @@ import StatCard from "@/components/dashboard/StatCard";
 import WeatherMain from "@/components/dashboard/WeatherMain";
 import AqiCard from "@/components/dashboard/AqiCard";
 import ForecastCard from "@/components/dashboard/ForecastCard";
-// Import Component Baru Slider
+// Import Slider Component
 import WeatherDetailsSlider from "@/components/dashboard/WeatherDetailSlider";
 
-// Visuals (hanya yang dipakai di halaman utama, sisanya sudah pindah ke Slider)
+// Visuals & Icons
 import { WindCompass, FeelsLikeSlider, HumidityBars } from "@/components/dashboard/Visuals";
 import { Wind, Thermometer, Droplets, ArrowLeft, X } from "lucide-react";
 
@@ -64,33 +64,36 @@ export default function Home() {
         );
     }
 
-    // 3. Tampilan Today & Tomorrow
+    // 3. Tampilan Today & Tomorrow (Layout 5 Kolom)
     const mainTitle = timeView === 'tomorrow' ? "Tomorrow" : "Today";
     const displayTitle = selectedForecastDay !== null ? forecastData[selectedForecastDay].full : mainTitle;
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
             
+            {/* Tombol Back jika sedang melihat detail dari Next 7 Days */}
             {selectedForecastDay !== null && (
                <button onClick={() => setSelectedForecastDay(null)} className="flex items-center gap-2 text-[#2B3674] font-bold hover:underline w-fit">
                   <ArrowLeft size={20} /> Back to 7 Days
                </button>
             )}
 
-            {/* ROW 1: PRIMARY WEATHER DATA */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* MAIN GRID: 5 KOLOM (Sesuai Desain) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 
-                {/* CARD 1: MAIN WEATHER */}
-                <WeatherMain title={displayTitle} />
+                {/* KOLOM 1: MAIN WEATHER */}
+                <div className="h-full">
+                    <WeatherMain title={displayTitle} />
+                </div>
 
-                {/* CARD 2: WIND */}
+                {/* KOLOM 2: WIND */}
                 <StatCard 
                     icon={<Wind size={20} className="text-[#A3AED0]" />}
                     title="Wind"
                     footer={
-                        <div>
+                        <div className="mt-2">
                             <div className="text-lg font-bold text-[#1B1B1E] mb-1">16 km/h <span className="text-sm font-normal text-[#A3AED0]">dari Barat Daya</span></div>
-                            <p className="text-xs text-[#A3AED0] leading-relaxed">
+                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
                                 Kondisi baik untuk berlayar dan suasana pantai yang sejuk.
                             </p>
                         </div>
@@ -99,18 +102,18 @@ export default function Home() {
                     <WindCompass /> 
                 </StatCard>
 
-                {/* CARD 3: FEELS LIKE */}
+                {/* KOLOM 3: FEELS LIKE */}
                 <StatCard 
                     icon={<Thermometer size={20} className="text-[#A3AED0]" />}
                     title="Feels Like"
                     footer={
-                        <div>
-                            <div className="flex justify-between items-center text-sm font-bold text-[#1B1B1E] mb-2">
+                        <div className="mt-4">
+                            <div className="flex justify-between items-center text-sm font-bold text-[#1B1B1E] mb-1">
                                 <span>Feels like: 30°</span>
-                                <span>Temp: 32°</span>
+                                <span>Temp: 30°</span>
                             </div>
-                            <p className="text-xs text-[#A3AED0] leading-relaxed">
-                                Meskipun suhu aktual tinggi, kombinasi angin membuat udara terasa nyaman.
+                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
+                                Meskipun suhu aktual tinggi, kombinasi angin membuat udara terasa lebih nyaman.
                             </p>
                         </div>
                     }
@@ -118,27 +121,26 @@ export default function Home() {
                     <FeelsLikeSlider value={30} />
                 </StatCard>
 
-                {/* CARD 4: HUMIDITY */}
+                {/* KOLOM 4: HUMIDITY */}
                 <StatCard 
                     icon={<Droplets size={20} className="text-[#A3AED0]" />}
                     title="Humidity"
                     footer={
-                        <div>
+                        <div className="mt-2">
                             <div className="text-lg font-bold text-[#1B1B1E] mb-1">Humidity: 71%</div>
-                            <p className="text-xs text-[#A3AED0] leading-relaxed">
-                                Tingkat kelembapan moderat. Udara terasa segar.
+                            <p className="text-[10px] text-[#A3AED0] leading-relaxed">
+                                Tingkat kelembapan moderat 71. Udara terasa segar.
                             </p>
                         </div>
                     }
                 >
                     <HumidityBars />
                 </StatCard>
-            </div>
 
-            {/* ROW 2: DETAIL CUACA LAINNYA (SLIDER COMPONENT) */}
-            <div>
-                {/* Kita panggil Component baru di sini */}
-                <WeatherDetailsSlider />
+                {/* KOLOM 5: DETAIL CUACA LAINNYA (SLIDER) */}
+                <div className="h-full">
+                    <WeatherDetailsSlider />
+                </div>
             </div>
         </div>
     );
@@ -149,7 +151,7 @@ export default function Home() {
       
       {/* WIDE MAP OVERLAY */}
       {isMapWide && (
-        <div className="fixed inset-0 z-[9999] bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
             <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-full text-blue-600">

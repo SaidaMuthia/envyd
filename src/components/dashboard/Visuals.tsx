@@ -1,8 +1,7 @@
 import React from 'react';
 
-// ... (WindCompass, FeelsLikeSlider, HumidityBars, VisibilityPyramid yang sudah ada tetap di sini) ...
+// --- VISUALISASI EXISTING (Tetap dipertahankan) ---
 
-// 1. Existing: WindCompass
 export function WindCompass() {
   return (
     <div className="relative w-24 h-24 border-[3px] border-[#E9EDF7] rounded-full flex items-center justify-center bg-white mt-1">
@@ -22,7 +21,6 @@ export function WindCompass() {
   );
 }
 
-// 2. Existing: FeelsLikeSlider
 export function FeelsLikeSlider({ value }: { value: number }) {
   return (
     <div className="w-full px-1 py-6">
@@ -34,7 +32,6 @@ export function FeelsLikeSlider({ value }: { value: number }) {
   );
 }
 
-// 3. Existing: HumidityBars
 export function HumidityBars() {
   const bars = [40, 60, 30, 80, 50, 70, 40]; 
   return (
@@ -43,120 +40,131 @@ export function HumidityBars() {
             <div 
                 key={i} 
                 style={{ height: `${h}%` }} 
-                className={`w-2.5 rounded-full transition-all duration-500 ${i===3 ? 'bg-[#4318FF]' : 'bg-[#E9EDF7]'}`}
+                className={`w-2.5 rounded-full transition-all duration-500 ${i===3 ? 'bg-[#2B3674]' : 'bg-[#E9EDF7]'}`}
             ></div>
         ))}
     </div>
   );
 }
 
-// 4. Existing: VisibilityPyramid (Disesuaikan agar mirip gambar more.png - Hijau)
+// --- VISUALISASI BARU (DIPERBAIKI) ---
+
+// 1. Visibility Pyramid (Fixed Spacing & Colors)
 export function VisibilityPyramid() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 grow py-2 w-full">
+    <div className="flex flex-col items-center justify-center gap-1.5 w-full py-2">
         {/* Layer 1 (Top) */}
-        <div className="w-[30%] h-2.5 bg-[#E9EDF7] rounded-full"></div>
+        <div className="w-[35%] h-2.5 bg-[#E9EDF7] rounded-full"></div>
         {/* Layer 2 */}
-        <div className="w-[50%] h-2.5 bg-[#05CD99] opacity-60 rounded-full"></div>
+        <div className="w-[50%] h-2.5 bg-[#6FEFAD] rounded-full"></div>
         {/* Layer 3 */}
-        <div className="w-[70%] h-2.5 bg-[#05CD99] opacity-80 rounded-full"></div>
+        <div className="w-[65%] h-2.5 bg-[#45D088] rounded-full"></div>
         {/* Layer 4 */}
-        <div className="w-[85%] h-2.5 bg-[#05CD99] rounded-full"></div>
+        <div className="w-[80%] h-2.5 bg-[#29AB68] rounded-full"></div>
         {/* Layer 5 (Base) */}
-        <div className="w-full h-2.5 bg-[#2E7D32] rounded-full shadow-sm"></div>
+        <div className="w-full h-2.5 bg-[#1B834B] rounded-full shadow-sm"></div>
     </div>
   );
 }
 
-// 5. BARU: UV Gauge (Visualisasi setengah lingkaran warna-warni)
+// 2. UV Gauge (Fixed Rotation & Gradient)
 export function UvGauge() {
     return (
-      <div className="relative w-32 h-32 flex items-center justify-center">
-        {/* SVG Ring */}
-        <svg className="w-full h-full transform -rotate-90">
-          <circle
-            cx="64"
-            cy="64"
-            r="56"
-            fill="transparent"
-            stroke="#E9EDF7"
-            strokeWidth="10"
-          />
-          {/* Colored Segments (Simulation) */}
-          <circle
-            cx="64"
-            cy="64"
-            r="56"
-            fill="transparent"
-            stroke="url(#uvGradient)"
-            strokeWidth="10"
-            strokeDasharray="260 360" // Mengisi sebagian lingkaran
-            strokeLinecap="round"
-          />
+      <div className="relative w-40 h-40 flex items-center justify-center -my-4">
+        {/* SVG Container */}
+        <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100">
           <defs>
             <linearGradient id="uvGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FFCE47" />
-              <stop offset="50%" stopColor="#FF5B5B" />
-              <stop offset="100%" stopColor="#4318FF" />
+              <stop offset="0%" stopColor="#FFCE47" /> {/* Yellow */}
+              <stop offset="50%" stopColor="#FF5B5B" /> {/* Red */}
+              <stop offset="100%" stopColor="#6B3AC1" /> {/* Purple */}
             </linearGradient>
           </defs>
+          
+          {/* Main Arc (Path C-Shape) */}
+          {/* M 20 80 A 40 40 0 1 1 80 80 -> Draw arc from bottom left to bottom right */}
+          <path
+            d="M 20 80 A 42 42 0 1 1 80 80"
+            fill="none"
+            stroke="url(#uvGradient)"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          
+          {/* Indicator Dot (Red Circle) */}
+          {/* Placed manually on the arc path for value '9' (High) */}
+          <circle cx="78" cy="38" r="5" fill="#FF5B5B" stroke="white" strokeWidth="2" className="shadow-md" />
         </svg>
+        
         {/* Value Text */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-5xl font-bold text-[#1B1B1E]">9</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center mt-4">
+            <span className="text-6xl font-bold text-[#1B1B1E] leading-none">9</span>
         </div>
-        {/* Dot Indicator */}
-        <div className="absolute top-2 right-4 w-4 h-4 bg-[#FF5B5B] rounded-full border-2 border-white shadow-md"></div>
       </div>
     );
 }
 
-// 6. BARU: Rain Chart (Grafik Batang + Garis)
+// 3. Rain Chart (Fixed Alignment with Percentages)
 export function RainChart() {
-    const data = [40, 25, 80, 20, 60, 30]; // Tinggi batang
-    return (
-        <div className="w-full h-40 relative flex items-end justify-between px-2 pt-8">
-            {/* Dashed Lines Background */}
-            <div className="absolute inset-0 flex flex-col justify-between py-2 px-0 pointer-events-none">
-                <div className="w-full border-t border-dashed border-gray-300"></div>
-                <div className="w-full border-t border-dashed border-gray-300"></div>
-                <div className="w-full border-t border-dashed border-gray-300"></div>
-            </div>
+    // Data points (0-100 scale relative to container height)
+    // Indexes: 0: 10AM, 1: 11AM, ...
+    const points = [40, 25, 75, 20, 65, 30]; 
+    
+    // X Positions in percentages (Centers of 6 columns: 1/12, 3/12, 5/12, etc.)
+    // 100 / 6 = 16.66% per column. Center is half of that (8.33%) + index * 16.66%
+    const xPos = [8.33, 25, 41.66, 58.33, 75, 91.66];
 
-            {/* Bars & Points */}
-            {data.map((h, i) => (
-                <div key={i} className="relative flex flex-col items-center h-full justify-end group w-full">
-                    {/* Blue Point on Line (Simulasi) */}
-                    <div 
-                        className="absolute w-2.5 h-2.5 bg-white border-[2px] border-[#4318FF] rounded-full z-10"
-                        style={{ bottom: `${h + 10}%` }}
-                    ></div>
-                    
-                    {/* Bar */}
-                    <div 
-                        style={{ height: `${h}%` }} 
-                        className="w-1.5 bg-[#A3AED0]/30 rounded-t-full group-hover:bg-[#4318FF]/50 transition-colors"
-                    ></div>
-                    
-                    {/* Top Marker (Black Pill) */}
-                    <div 
-                        className="absolute w-1.5 h-3 bg-[#1B1B1E] rounded-full"
-                        style={{ bottom: `${h}%` }}
-                    ></div>
-                </div>
-            ))}
-            
-            {/* Curved Line (SVG Overlay) - Simplifikasi visual */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+    // Create Smooth Bezier Path String dynamically based on points
+    // This creates the "S" curve string for SVG
+    const pathD = `
+      M ${xPos[0]} ${100 - points[0]} 
+      C ${xPos[0] + 5} ${100 - points[0]}, ${xPos[1] - 5} ${100 - points[1]}, ${xPos[1]} ${100 - points[1]}
+      S ${xPos[2] - 5} ${100 - points[2]}, ${xPos[2]} ${100 - points[2]}
+      S ${xPos[3] - 5} ${100 - points[3]}, ${xPos[3]} ${100 - points[3]}
+      S ${xPos[4] - 5} ${100 - points[4]}, ${xPos[4]} ${100 - points[4]}
+      S ${xPos[5] - 5} ${100 - points[5]}, ${xPos[5]} ${100 - points[5]}
+    `;
+
+    return (
+        <div className="w-full h-40 relative px-2 pt-6 pb-2">
+            {/* Background Dotted Lines */}
+            <div className="absolute inset-x-2 top-[30%] border-t-2 border-dotted border-gray-300"></div>
+            <div className="absolute inset-x-2 top-[60%] border-t-2 border-dotted border-gray-300"></div>
+
+            {/* SVG Layer for Curve Line (Absolute Overlay) */}
+            <svg className="absolute inset-0 w-full h-full z-20 pointer-events-none px-2 pt-6 pb-2 overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
                 <path 
-                    d="M10,90 C30,110 50,40 90,40 C130,40 150,110 190,110 C230,110 250,60 290,60 C330,60 350,100 370,90" 
+                    d={pathD}
                     fill="none" 
-                    stroke="#4318FF" 
-                    strokeWidth="1" 
-                    className="opacity-50"
-                    transform="scale(1, -1) translate(0, -140)" // Flip coordinates primitive tweak
+                    stroke="#93C5FD" // Tailwind blue-300
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke" // Keeps line thin even if scaled
                 />
             </svg>
+
+            {/* HTML Layer for Bars and Points */}
+            <div className="relative w-full h-full">
+                {points.map((h, i) => (
+                    <div 
+                        key={i} 
+                        className="absolute bottom-0 w-1.5 bg-[#BFDBFE] rounded-t-full z-10 flex flex-col items-center"
+                        style={{ 
+                            left: `calc(${xPos[i]}% - 3px)`, // Center perfectly based on calculated %
+                            height: `${h}%` 
+                        }}
+                    >
+                        {/* Black Pill Marker (Top of Bar) */}
+                        <div className="absolute -top-1 w-1.5 h-3 bg-[#1B1B1E] rounded-full z-20"></div>
+
+                        {/* Blue/White Dot (Intersection Point) */}
+                        {/* We offset this slightly up from the bar top to sit on the curve */}
+                        <div 
+                            className="absolute bg-white border-2 border-[#60A5FA] rounded-full z-30 w-2.5 h-2.5"
+                            style={{ top: '-10px' }} 
+                        ></div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
