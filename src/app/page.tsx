@@ -45,6 +45,14 @@ export default function Home() {
     if (view === 'next7') setSelectedForecastDay(0);
   };
 
+  const handleModeChange = (mode: "forecast" | "aqi") => {
+    setActiveMode(mode);
+    
+    if (mode === 'aqi' && timeView === 'next7') {
+        setTimeView('today');
+    }
+  };
+
   const getIcon = (condition: string, size: number = 64) => {
     const c = condition.toLowerCase();
     if (c.includes("sun") || c.includes("clear")) return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
@@ -213,17 +221,25 @@ export default function Home() {
       )}
 
       <Header />
-
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 px-1 mt-8 items-end">
         <div className="lg:col-span-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex gap-8 text-lg font-bold">
               <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
               <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
-              <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
+              
+              {activeMode === 'forecast' && (
+                  <button 
+                    onClick={() => handleTabChange('next7')} 
+                    className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#1B1B1E] border-b-2 border-[#1B1B1E]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
+                  >
+                    Next 7 days
+                  </button>
+              )}
+              
             </div>
             <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
-              <button onClick={() => setActiveMode("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
-              <button onClick={() => setActiveMode("aqi")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Air Quality Index</button>
+              <button onClick={() => handleModeChange("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
+              <button onClick={() => handleModeChange("aqi")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'aqi' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Air Quality Index</button>
             </div>
         </div>
         <div className="lg:col-span-1 hidden lg:flex items-center pb-2">
