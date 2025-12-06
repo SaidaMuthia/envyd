@@ -1,14 +1,16 @@
+// src/components/map/DashboardMap.tsx
+
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation"; // Import Router
 
-// Fix icon
 const icon = L.icon({
-  iconUrl: "[https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png](https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png)",
-  shadowUrl: "[https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png](https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png)",
+  iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -19,8 +21,8 @@ interface DashboardMapProps {
 }
 
 export default function DashboardMap({ onExpand, isExpanded = false }: DashboardMapProps) {
-  
-  // Hook untuk memaksa map resize saat container berubah ukuran (penting untuk mode wide)
+  const router = useRouter(); // Init router
+
   useEffect(() => {
     window.dispatchEvent(new Event("resize"));
   }, [isExpanded]);
@@ -30,8 +32,9 @@ export default function DashboardMap({ onExpand, isExpanded = false }: Dashboard
       <MapContainer 
         center={[-5.1477, 119.4327]} 
         zoom={13} 
-        scrollWheelZoom={isExpanded} // Hanya bisa scroll zoom saat expanded agar tidak mengganggu scroll halaman
+        scrollWheelZoom={isExpanded} 
         className="h-full w-full"
+        zoomControl={false} // Disable zoom control default agar tidak ketutupan tombol
       >
         <TileLayer
           attribution='&copy; OpenStreetMap'
@@ -42,11 +45,11 @@ export default function DashboardMap({ onExpand, isExpanded = false }: Dashboard
         </Marker>
       </MapContainer>
       
-      {/* Floating Button (Hanya muncul jika TIDAK expanded) */}
+      {/* Tombol View Wide -> Pindah ke Page Map */}
       {!isExpanded && (
         <button 
-            onClick={onExpand}
-            className="absolute bottom-6 right-6 bg-white hover:bg-gray-50 text-[#2B3674] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg transition-all z-400 border border-[#F4F7FE] cursor-pointer"
+            onClick={() => router.push('/map')} // NAVIGASI KE HALAMAN BARU
+            className="absolute top-6 right-6 bg-white hover:bg-gray-50 text-[#2B3674] px-6 py-2.5 rounded-full text-sm font-bold shadow-lg transition-all z-400 border border-[#F4F7FE] cursor-pointer"
         >
             View Wide
         </button>

@@ -219,7 +219,7 @@ export default function Home() {
             <div className="flex gap-8 text-lg font-bold">
               <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
               <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
-              <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#4318FF] border-b-2 border-[#4318FF]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
+              <button onClick={() => handleTabChange('next7')} className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 7 days</button>
             </div>
             <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
               <button onClick={() => setActiveMode("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
@@ -242,7 +242,7 @@ export default function Home() {
       </div>
 
       <section className="mt-8">
-        <h3 className="text-xl font-bold text-[#2B3674] mb-4">Map Overview</h3>
+        <h3 className="text-xl font-bold text-[#1B2559] mb-4">Map Overview</h3>
         <DashboardMap onExpand={() => setIsMapWide(true)} />
       </section>
     </main>
