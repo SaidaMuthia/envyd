@@ -1,12 +1,14 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 // @ts-ignore
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation"; 
-import { useLocation } from "@/context/LocationContext"; // 1. Import Context
+import { useLocation } from "@/context/LocationContext"; 
+
+// 1. Import Context
 
 // Icon Fix (Tetap Sama)
 const icon = L.icon({
@@ -24,6 +26,50 @@ function MapUpdater({ center }: { center: [number, number] }) {
     map.flyTo(center, 13, { duration: 1.5 });
   }, [center, map]);
   return null;
+}
+
+function MapClickHandler() {
+  const { setActiveLocation } = useLocation();
+
+  useMapEvents({
+    click: async (e) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      
+      console.log(`Peta diklik di: Lat: ${lat}, Lng: ${lng}`);
+
+      // 1. Panggil API Reverse Geocode untuk mencari lokasi terdekat
+      try {
+        const response = await fetch(`/api/reverse-geocode?lat=${lat}&lng=${lng}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Gagal reverse geocode:", errorData.error);
+          alert("Lokasi tidak ditemukan di database cuaca terdekat.");
+          return;
+        }
+
+        const data = await response.json();
+        const nearest = data.location;
+        
+        // 2. Perbarui Context! Ini akan memicu MapUpdater & LocationContext (fetch data cuaca baru)
+        setActiveLocation({
+          name: nearest.name,
+          adm4: nearest.adm4, // Kunci untuk fetch data cuaca
+          lat: nearest.lat,
+          lng: nearest.lon,
+        });
+
+        console.log(`Lokasi terdekat ditemukan: ${nearest.name} (${nearest.adm4})`);
+
+      } catch (error) {
+        console.error("Error fetching reverse geocode:", error);
+        alert("Terjadi kesalahan saat mencari lokasi.");
+      }
+    },
+  });
+
+  return null; 
 }
 
 interface DashboardMapProps {
@@ -65,7 +111,9 @@ export default function DashboardMap({ onExpand, isExpanded = false }: Dashboard
 
         {/* Logic Update Posisi */}
         <MapUpdater center={[lat, lng]} />
+        <MapClickHandler />
       </MapContainer>
+      
       
       {/* Tombol View Wide ASLI */}
       {!isExpanded && (

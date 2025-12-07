@@ -25,4 +25,8 @@ export interface ForecastItem {
   wind: number;
   humidity: number;
   feelsLike: number;
+  windDirCode: string; 
+  windDir: string;
+  visibility: number;
+  uv: number;
 }

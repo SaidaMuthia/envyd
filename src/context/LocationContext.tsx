@@ -2,10 +2,26 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { WeatherData, ForecastItem } from '@/lib/types';
 
-// Struktur data default agar UI tidak error saat loading
+interface DashboardMapProps {
+  onExpand?: () => void;
+  isExpanded?: boolean;
+}
 const defaultForecast: ForecastItem[] = Array(8).fill({
-  day: "-", full: "Loading...", condition: "Sunny", temp: 0, low: 0, high: 0, rain: false, wind: 0, humidity: 0, feelsLike: 0
+  day: "-", 
+  full: "Loading...", 
+  condition: "Sunny", 
+  temp: 0, 
+  low: 0, 
+  high: 0, 
+  rain: false, 
+  wind: 0, 
+  humidity: 0, 
+  feelsLike: 0,
+  // ⭐️ TAMBAHKAN INI UNTUK MENGHILANGKAN ERROR DEFAULT ⭐️
+  windDirCode: "-", 
+  windDir: "Loading Direction", // Memberi nilai string default
 });
+// Struktur data default agar UI tidak error saat loading
 
 type LocationType = {
   name: string;

@@ -91,8 +91,12 @@ export default function Home() {
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
-                        <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
+                        <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>   
                     </div>
+                    <div className="flex items-center gap-1 mb-1">
+                         <span className="text-sm font-semibold text-[#1B1B1E]">Arah:</span>
+                         <span className="text-sm font-bold text-blue-600">{data.windDir}</span> {/* Menggunakan data.windDir */}
+                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kecepatan angin saat ini.</p>
                 </div>
             }
@@ -172,7 +176,7 @@ export default function Home() {
                                         <p>Wind: {item.wind} km/h</p>
                                         <p>Feels: {item.feelsLike}°</p>
                                         <p>Hum: {item.humidity}%</p>
-                                        <p>Vis: 8 km</p>
+                                        <p>Vis: {item.visibility} km</p>
                                     </div>
                                 </div>
                             </div>

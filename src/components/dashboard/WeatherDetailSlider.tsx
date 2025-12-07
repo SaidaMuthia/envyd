@@ -6,12 +6,30 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { VisibilityPyramid, UvGauge, RainChart } from "@/components/dashboard/Visuals";
+import { useLocation } from "@/context/LocationContext";
+
+const getUvStatus = (uvIndex: number) => {
+    if (uvIndex < 3) return "Rendah (Low)";
+    if (uvIndex < 6) return "Sedang (Moderate)";
+    if (uvIndex < 8) return "Tinggi (High)";
+    if (uvIndex < 11) return "Sangat Tinggi (Very High)";
+    return "Ekstrem (Extreme)";
+};
 
 export default function WeatherDetailsSlider() {
   const [detailIndex, setDetailIndex] = useState(0);
-
+  const { forecast, loading, weather } = useLocation();
+  const safeData = weather || (forecast.length > 0 ? forecast[0] : null);
   const nextDetail = () => setDetailIndex((prev) => (prev === 2 ? 0 : prev + 1));
   const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 2 : prev - 1));
+  const visibilityKm = safeData && safeData.visibility !== undefined
+      ? safeData.visibility.toFixed(1)
+      : (loading ? '...' : 'N/A');
+  const currentUvIndex = safeData ? (safeData.uv || 0) : 0; 
+  const uvStatus = getUvStatus(currentUvIndex);
+  const uvDesc = currentUvIndex >= 8 
+        ? "Wajib gunakan pelindung. Hindari matahari pukul 10-4." 
+        : "Amankan diri dengan topi dan kacamata hitam.";
 
   const UNIFIED_TITLE_COLOR = "text-[#345B92]";
 
@@ -22,7 +40,7 @@ export default function WeatherDetailsSlider() {
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/Visibility_icon.svg",
       component: <VisibilityPyramid />,
-      mainValue: "Visibility: 8 km",
+      mainValue: `Visibility: ${visibilityKm} km`,
       desc: "Jarak pandang baik untuk berkendara. Waspada terhadap sedikit haze.",
       scale: "scale-100" 
     },
@@ -32,7 +50,7 @@ export default function WeatherDetailsSlider() {
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/UV_icon.svg",
       component: <UvGauge />,
-      mainValue: "Sangat Tinggi",
+      mainValue: uvStatus,
       desc: "Stay inside.",
       scale: "scale-100" 
     },
