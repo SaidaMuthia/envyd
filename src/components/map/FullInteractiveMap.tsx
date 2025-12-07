@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -22,22 +22,93 @@ const icon = L.icon({
   iconAnchor: [12, 41],
 });
 
+// ===== REVERSE GEOCODING: Cari lokasi terdekat dari koordinat =====
+async function findNearestCity(lat: number, lng: number) {
+  try {
+    const response = await fetch("/api/search-location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lat, lng })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Reverse geocoding error:", error);
+    return { name: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`, lat, lng, adm4: "" };
+  }
+}
+
+// ===== INDONESIA MAP BOUNDARIES =====
+const INDONESIA_BOUNDS = [
+  [-11, 94],  // Southwest corner
+  [6, 141]    // Northeast corner
+];
+
 export default function FullInteractiveMap() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [citiesData, setCitiesData] = useState<any[]>([]);
   
   const { activeLocation, setActiveLocation } = useLocation();
+
+  // Load cities data on mount
+  useEffect(() => {
+    const loadCities = async () => {
+      try {
+        const res = await fetch("/data/cities.json");
+        const data = await res.json();
+        setCitiesData(data);
+      } catch (error) {
+        console.error("Failed to load cities:", error);
+      }
+    };
+    loadCities();
+  }, []);
+
+  // Calculate distance between two coordinates (Haversine formula)
+  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  // Find nearest city from click coordinate
+  function findNearestCityFromCoord(lat: number, lng: number) {
+    if (citiesData.length === 0) {
+      return { name: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`, lat, lng, adm4: "" };
+    }
+
+    let nearest = citiesData[0];
+    let minDistance = calculateDistance(lat, lng, citiesData[0].lat, citiesData[0].lon);
+
+    for (let i = 1; i < citiesData.length; i++) {
+      const distance = calculateDistance(lat, lng, citiesData[i].lat, citiesData[i].lon);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = citiesData[i];
+      }
+    }
+
+    return {
+      name: nearest.name,
+      lat: nearest.lat,
+      lng: nearest.lon,
+      adm4: nearest.adm4
+    };
+  }
 
   function MapClickHandler() {
     useMapEvents({
       click: (e) => {
         const { lat, lng } = e.latlng;
-        setActiveLocation({
-            name: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`,
-            lat: lat,
-            lng: lng,
-            adm4: ""
-        });
+        const nearestCity = findNearestCityFromCoord(lat, lng);
+        setActiveLocation(nearestCity);
         setIsSidebarOpen(true);
       },
     });
@@ -84,9 +155,13 @@ export default function FullInteractiveMap() {
       {/* MAP */}
       <MapContainer 
         center={[activeLocation.lat, activeLocation.lng]} 
-        zoom={13} 
+        zoom={5} 
         className="w-full h-full z-0"
         zoomControl={false}
+        maxBounds={INDONESIA_BOUNDS as any}
+        maxBoundsViscosity={1.0}
+        minZoom={4}
+        maxZoom={18}
       >
         <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapClickHandler />

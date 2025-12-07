@@ -22,6 +22,8 @@ export interface ForecastItem {
   low: number;
   high: number;
   rain: boolean;
+  rainfall?: number; // Total curah hujan per hari (mm)
+  hourlyRainfall?: Array<{ time: string; rainfall: number }>; // Curah hujan per jam
   wind: number;
   humidity: number;
   feelsLike: number;

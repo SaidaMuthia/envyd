@@ -8,15 +8,16 @@ export default function AqiCard() {
 
   // Ambil Data
   const aqi = weather?.aqi || 0;
+  const aqiStatus = weather?.aqiStatus || "Good";
   
   // Logic Status & Warna (Biar teks Good berubah jadi Moderate dst)
-  let status = "Good";
+  let status = aqiStatus;
   let color = "#05CD99"; // Hijau asli
   
   if (aqi > 300) { status = "Hazardous"; color = "#7E0023"; }
   else if (aqi > 200) { status = "Very Unhealthy"; color = "#660099"; }
   else if (aqi > 150) { status = "Unhealthy"; color = "#EE5D50"; }
-  else if (aqi > 100) { status = "Unhealthy (Sen)"; color = "#FF7B1C"; }
+  else if (aqi > 100) { status = "Unhealthy for Sensitive"; color = "#FF7B1C"; }
   else if (aqi > 50) { status = "Moderate"; color = "#FFB547"; }
 
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function AqiCard() {
     setPercent(p);
   }, [aqi]);
 
-  if (loading || !weather) return <div className="bg-white p-8 rounded-[30px] w-full h-full min-h-60 animate-pulse bg-gray-50"></div>;
+  if (loading || !weather) return <div className="bg-white p-8 rounded-[30px] w-full h-full min-h-60 animate-pulse"></div>;
 
   return (
     <div className="bg-white p-8 rounded-[30px] shadow-[0_20px_25px_-5px_rgba(112,144,176,0.1)] w-full h-full min-h-60 flex flex-col justify-between border border-transparent">
@@ -67,7 +68,7 @@ export default function AqiCard() {
             </p>
          </div>
        </div>
-       <p className="text-[10px] text-[#A3AED0] mt-4">Data from WAQI</p>
+       <p className="text-[10px] text-[#A3AED0] mt-4">Data from Open-Meteo Air Quality API</p>
     </div>
   );
 }

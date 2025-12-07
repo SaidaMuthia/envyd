@@ -99,12 +99,29 @@ export async function GET(req: NextRequest) {
 
     const forecastList = cuaca.map((dayData: any[]) => {
       const d = dayData[0];
+      // Deteksi hujan dari data BMKG
+      let hasRain = false;
+      let totalRainfall = 0;
+      
+      // Cek semua jam dalam hari ini untuk curah hujan
+      dayData.forEach((hourData: any) => {
+        const rainfall = parseFloat(hourData.ch || 0); // ch = curah hujan
+        if (rainfall > 0) hasRain = true;
+        totalRainfall += rainfall;
+      });
+      
       return {
         day: new Date(d.local_datetime).toLocaleDateString("en-US", { weekday: "short" }),
         full: new Date(d.local_datetime).toLocaleDateString("en-US", { weekday: "long" }),
         condition: parseCondition(d.weather_desc),
         temp: parseInt(d.t),
-        low: 24, high: 32, rain: false, wind: parseInt(d.ws), humidity: parseInt(d.hu), feelsLike: 30
+        low: 24, high: 32, 
+        rain: hasRain, 
+        rainfall: totalRainfall, // Total mm untuk hari tersebut
+        wind: parseInt(d.ws), 
+        humidity: parseInt(d.hu), 
+        feelsLike: 30,
+        hourlyRainfall: dayData.map((h: any) => ({ time: h.local_datetime, rainfall: parseFloat(h.ch || 0) }))
       };
     });
 
