@@ -35,7 +35,8 @@ export default function FullInteractiveMap() {
         setActiveLocation({
             name: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`,
             lat: lat,
-            lng: lng
+            lng: lng,
+            adm4: ""
         });
         setIsSidebarOpen(true);
       },
