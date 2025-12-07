@@ -197,7 +197,7 @@ export default function Home() {
       {/* Map Overlay */}
       {isMapWide && (
         // ... (Kode overlay map asli) ...
-        <div className="fixed inset-0 z-[9999] bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
             <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
                 <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition"><ArrowLeft size={24}/></button>
                 <span className="font-bold text-[#2B3674] text-lg">Wide Map View</span>

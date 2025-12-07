@@ -87,7 +87,7 @@ export default function Header() {
 
         {/* Dropdown Hasil (Overlay, tidak merusak layout) */}
         {results.length > 0 && (
-          <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-[100]">
+          <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-100">
              {results.map((item) => (
                <div 
                  key={item.adm4}
