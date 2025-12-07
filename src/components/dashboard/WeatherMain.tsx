@@ -1,4 +1,4 @@
-import { Cloud, CloudRain, CloudSun, Sun } from "lucide-react";
+import { Sun, Cloud, CloudRain, CloudSun } from "lucide-react";
 
 interface WeatherMainProps {
   title: string;
@@ -10,26 +10,13 @@ interface WeatherMainProps {
 
 export default function WeatherMain({ title, temp, condition, low, high }: WeatherMainProps) {
   
-  // Helper untuk memilih icon library berdasarkan kondisi
-  const getWeatherIcon = (cond: string) => {
-    // Icon size besar untuk tampilan utama
-    const size = 100; 
-    
-    // Normalisasi string kondisi agar tidak case-sensitive
+  // Helper Icon Sederhana (sesuai import lucide di atas)
+  const getIcon = (cond: string) => {
     const c = cond.toLowerCase();
-
-    if (c.includes("sun") || c.includes("clear")) {
-      return <Sun size={size} className="text-yellow-400 fill-yellow-400 drop-shadow-md" />;
-    } else if (c.includes("partly") || c.includes("cloud") && c.includes("sun")) {
-      return <CloudSun size={size} className="text-yellow-400 drop-shadow-md" />;
-    } else if (c.includes("rain") || c.includes("drizzle")) {
-      return <CloudRain size={size} className="text-blue-400 fill-blue-50 drop-shadow-md" />;
-    } else if (c.includes("cloud")) {
-      return <Cloud size={size} className="text-gray-400 fill-gray-100 drop-shadow-md" />;
-    } else {
-      // Default fallback
-      return <Sun size={size} className="text-yellow-400 fill-yellow-400 drop-shadow-md" />;
-    }
+    if (c.includes("sun") || c.includes("clear")) return <Sun size={100} className="text-yellow-400 fill-yellow-400 drop-shadow-md" />;
+    else if (c.includes("partly") || c.includes("cloud") && c.includes("sun")) return <CloudSun size={100} className="text-yellow-400 drop-shadow-md" />;
+    else if (c.includes("rain") || c.includes("drizzle")) return <CloudRain size={100} className="text-blue-400 fill-blue-50 drop-shadow-md" />;
+    else return <Cloud size={100} className="text-gray-400 fill-gray-100 drop-shadow-md" />;
   };
 
   return (
@@ -40,10 +27,11 @@ export default function WeatherMain({ title, temp, condition, low, high }: Weath
         <span className="text-sm font-medium text-[#A3AED0]">12:00 PM</span>
       </div>
 
-      {/* Icon Area - Sekarang menggunakan Lucide Icon */}
+      {/* Icon Area */}
       <div className="flex flex-col items-center justify-center my-1 gap-1 flex-1">
          <div className="transform hover:scale-110 transition-transform duration-300">
-            {getWeatherIcon(condition)}
+            {/* Panggil fungsi icon disini */}
+            {getIcon(condition)}
          </div>
          <span className="text-[#A3AED0] font-medium text-sm mt-1">{condition}</span>
       </div>

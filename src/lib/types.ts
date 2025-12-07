@@ -10,10 +10,19 @@ export interface WeatherData {
   visibility: number;
   aqi: number;
   aqiStatus: string;
+  uv?: number; // Tambahan field UV (opsional agar aman)
+  time?: string;
 }
 
-export interface ForecastData {
-  day: string;
+export interface ForecastItem {
+  day: string;  
+  full: string; 
+  condition: string;
   temp: number;
-  icon: string; // 'sun' | 'cloud' | 'rain'
+  low: number;
+  high: number;
+  rain: boolean;
+  wind: number;
+  humidity: number;
+  feelsLike: number;
 }

@@ -1,27 +1,71 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { WeatherData, ForecastItem } from '@/lib/types';
 
-// Tipe data sederhana
+// Struktur data default agar UI tidak error saat loading
+const defaultForecast: ForecastItem[] = Array(8).fill({
+  day: "-", full: "Loading...", condition: "Sunny", temp: 0, low: 0, high: 0, rain: false, wind: 0, humidity: 0, feelsLike: 0
+});
+
 type LocationType = {
   name: string;
+  adm4: string; 
   lat: number;
   lng: number;
 };
 
-const LocationContext = createContext<{
+interface LocationContextType {
   activeLocation: LocationType;
   setActiveLocation: (loc: LocationType) => void;
-} | undefined>(undefined);
+  weather: WeatherData | null;
+  forecast: ForecastItem[];
+  loading: boolean;
+}
+
+const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
 export function LocationProvider({ children }: { children: ReactNode }) {
+  // Default: Makassar (sesuai kode temanmu)
   const [activeLocation, setActiveLocation] = useState<LocationType>({
-    name: "Makassar, Indonesia", // Default
+    name: "Makassar, Indonesia",
+    adm4: "73.71.11.1001", 
     lat: -5.1477,
     lng: 119.4327,
   });
 
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [forecast, setForecast] = useState<ForecastItem[]>(defaultForecast);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!activeLocation.adm4) return;
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/weather?adm4=${activeLocation.adm4}`);
+        const data = await res.json();
+        
+        if (data.current) setWeather(data.current);
+        if (data.forecast) setForecast(data.forecast);
+        
+        if (data.location) {
+          setActiveLocation(prev => ({
+            ...prev,
+            lat: parseFloat(data.location.lat),
+            lng: parseFloat(data.location.lon)
+          }));
+        }
+      } catch (error) {
+        console.error("Failed fetch", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [activeLocation.adm4]);
+
   return (
-    <LocationContext.Provider value={{ activeLocation, setActiveLocation }}>
+    <LocationContext.Provider value={{ activeLocation, setActiveLocation, weather, forecast, loading }}>
       {children}
     </LocationContext.Provider>
   );
@@ -29,6 +73,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
 export const useLocation = () => {
   const context = useContext(LocationContext);
-  if (!context) throw new Error("useLocation must be used within LocationProvider");
+  if (!context) throw new Error("useLocation error");
   return context;
 };

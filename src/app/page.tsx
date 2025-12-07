@@ -1,9 +1,7 @@
-// src/app/page.tsx
-
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useRef } from "react"; // Tambah useRef
+import { useState, useRef } from "react";
 import Header from "@/components/layout/Header";
 import StatCard from "@/components/dashboard/StatCard";
 import WeatherMain from "@/components/dashboard/WeatherMain";
@@ -13,6 +11,7 @@ import WeatherDetailsSlider from "@/components/dashboard/WeatherDetailSlider";
 // Visuals & Icons
 import { WindCompass, FeelsLikeSlider, HumidityBars } from "@/components/dashboard/Visuals";
 import { Wind, ArrowLeft, X, Sun, Cloud, CloudRain, CloudSun } from "lucide-react";
+import { useLocation } from "@/context/LocationContext"; // IMPORT CONTEXT
 
 // Import Map
 const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
@@ -21,24 +20,18 @@ const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
 });
 
 export default function Home() {
+  const { forecast, loading } = useLocation(); // <--- GANTI DISINI
+  
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next7">("today");
   const [isMapWide, setIsMapWide] = useState(false);
   const [selectedForecastDay, setSelectedForecastDay] = useState<number>(0);
 
-  // REF untuk container scroll
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const forecastData = [
-    { day: "Tod", full: "Today", condition: "Sunny", temp: 32, low: 28, high: 34, rain: false, wind: 16, humidity: 71, feelsLike: 30 },
-    { day: "Mon", full: "Monday", condition: "Cloudy", temp: 31, low: 26, high: 33, rain: true, wind: 12, humidity: 80, feelsLike: 33 },
-    { day: "Tue", full: "Tuesday", condition: "Partly Cloudy", temp: 29, low: 26, high: 31, rain: true, wind: 18, humidity: 65, feelsLike: 28 },
-    { day: "Wed", full: "Wednesday", condition: "Sunny", temp: 33, low: 29, high: 36, rain: false, wind: 10, humidity: 50, feelsLike: 35 },
-    { day: "Thu", full: "Thursday", condition: "Partly Cloudy", temp: 30, low: 27, high: 33, rain: true, wind: 22, humidity: 75, feelsLike: 29 },
-    { day: "Fri", full: "Friday", condition: "Sunny", temp: 34, low: 28, high: 35, rain: false, wind: 14, humidity: 45, feelsLike: 36 },
-    { day: "Sat", full: "Saturday", condition: "Cloudy", temp: 28, low: 25, high: 30, rain: true, wind: 20, humidity: 85, feelsLike: 27 },
-    { day: "Sun", full: "Sunday", condition: "Sunny", temp: 33, low: 29, high: 35, rain: false, wind: 9, humidity: 45, feelsLike: 36 },
-  ] as const;
+  // --- KITA PAKAI DATA DARI CONTEXT (forecast), BUKAN HARDCODE ---
+  // Jika masih loading, kita pakai array kosong atau dummy agar tidak error saat render
+  const safeForecast = (loading || forecast.length === 0) ? [] : forecast;
 
   const handleTabChange = (view: "today" | "tomorrow" | "next7") => {
     setTimeView(view);
@@ -47,14 +40,13 @@ export default function Home() {
 
   const handleModeChange = (mode: "forecast" | "aqi") => {
     setActiveMode(mode);
-    
     if (mode === 'aqi' && timeView === 'next7') {
         setTimeView('today');
     }
   };
 
   const getIcon = (condition: string, size: number = 64) => {
-    const c = condition.toLowerCase();
+    const c = (condition || "").toLowerCase();
     if (c.includes("sun") || c.includes("clear")) return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
     else if (c.includes("partly") || c.includes("cloud") && c.includes("sun")) return <CloudSun size={size} className="text-yellow-400" />;
     else if (c.includes("rain") || c.includes("drizzle")) return <CloudRain size={size} className="text-blue-400 fill-blue-50" />;
@@ -62,40 +54,34 @@ export default function Home() {
     else return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
   };
 
-  // --- LOGIKA SCROLL KE TENGAH YANG AMAN ---
   const handleCardClick = (index: number, e: React.MouseEvent<HTMLDivElement>) => {
     setSelectedForecastDay(index);
-    
-    // Kita scroll CONTAINER-nya, bukan Window-nya. Ini mencegah halaman loncat.
     if (scrollContainerRef.current) {
         const container = scrollContainerRef.current;
         const card = e.currentTarget;
-
-        // Hitung posisi tengah
         const scrollLeft = card.offsetLeft - (container.clientWidth / 2) + (card.clientWidth / 2);
-
-        container.scrollTo({
-            left: scrollLeft,
-            behavior: 'smooth'
-        });
+        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
     }
   };
 
-  // ... (renderStandardDashboard tetap sama) ...
+  // --- RENDER FUNCTIONS (TIDAK UBAH DESAIN) ---
   const renderStandardDashboard = () => {
+    if (loading || safeForecast.length === 0) return <div className="p-10 text-center">Loading Data...</div>;
+
     const isTomorrow = timeView === 'tomorrow';
-    const data = isTomorrow ? forecastData[1] : forecastData[0];
+    // Ambil index 0 (hari ini) atau 1 (besok) dari data API
+    const data = isTomorrow ? (safeForecast[1] || safeForecast[0]) : safeForecast[0];
     const title = isTomorrow ? "Tomorrow" : "Today";
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full min-h-[280px]">
          <div className="h-full">
             <WeatherMain 
-                title={title} 
-                temp={data.temp} 
-                condition={data.condition}
-                low={data.low}
-                high={data.high}
+               title={title} 
+               temp={data.temp} 
+               condition={data.condition}
+               low={data.low}
+               high={data.high}
             />
          </div>
          <StatCard 
@@ -107,7 +93,7 @@ export default function Home() {
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
                         <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
                     </div>
-                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Angin berhembus dari arah Barat Daya.</p>
+                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kecepatan angin saat ini.</p>
                 </div>
             }
          >
@@ -137,7 +123,7 @@ export default function Home() {
                         <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity}</span>
                         <span className="text-sm font-bold text-[#1B1B1E]">%</span>
                     </div>
-                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Tingkat kelembapan {data.humidity > 70 ? "tinggi" : "moderat"}.</p>
+                    <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kelembapan udara.</p>
                 </div>
             }
          >
@@ -154,7 +140,8 @@ export default function Home() {
         className="w-full elegant-scrollbar px-1 pt-1 h-full min-h-[280px] flex items-center pr-4"
       >
         <div className="flex gap-4 h-full min-w-max">
-            {forecastData.map((item, index) => {
+            {/* Ganti forecastData dengan safeForecast (Data API) */}
+            {safeForecast.map((item, index) => {
                 const isSelected = selectedForecastDay === index;
                 return (
                     <div 
@@ -182,7 +169,7 @@ export default function Home() {
                                         <div className="text-xs font-bold text-[#A3AED0] mt-1">Low: {item.low}° <br/> High: {item.high}°</div>
                                     </div>
                                     <div className="flex flex-col justify-center items-center text-[10px] font-medium text-[#1B1B1E] bg-gray-50 px-3 py-2 rounded-xl min-w-[100px] gap-1.5 shadow-sm">
-                                        <p>Wind: {item.wind} mph</p>
+                                        <p>Wind: {item.wind} km/h</p>
                                         <p>Feels: {item.feelsLike}°</p>
                                         <p>Hum: {item.humidity}%</p>
                                         <p>Vis: 8 km</p>
@@ -194,7 +181,7 @@ export default function Home() {
                                 <div className="w-full flex justify-center"><span className="text-xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1">{item.day}</span></div>
                                 <div className="flex flex-col items-center gap-2 flex-1 justify-center"><div className="drop-shadow-sm scale-90">{getIcon(item.condition, 48)}</div></div>
                                 <div className="text-4xl font-medium text-[#1B1B1E] text-center mb-2">{item.temp}°</div>
-                            </div>
+                           </div>
                         )}
                     </div>
                 );
@@ -204,11 +191,13 @@ export default function Home() {
     );
   };
 
+  // --- RETURN HTML ASLI (Tidak diubah strukturnya) ---
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-[1920px] mx-auto font-sans bg-[#F4F7FE] relative text-[#1B2559]">
       {/* Map Overlay */}
       {isMapWide && (
-        <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
+        // ... (Kode overlay map asli) ...
+        <div className="fixed inset-0 z-[9999] bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
             <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
                 <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition"><ArrowLeft size={24}/></button>
                 <span className="font-bold text-[#2B3674] text-lg">Wide Map View</span>
@@ -221,6 +210,7 @@ export default function Home() {
       )}
 
       <Header />
+      
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 px-1 mt-8 items-end">
         <div className="lg:col-span-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex gap-8 text-lg font-bold">
@@ -235,7 +225,6 @@ export default function Home() {
                     Next 7 days
                   </button>
               )}
-              
             </div>
             <div className="bg-white p-1 rounded-full shadow-sm flex items-center">
               <button onClick={() => handleModeChange("forecast")} className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeMode === 'forecast' ? 'bg-[#1B1B1E] text-white' : 'bg-transparent text-[#A3AED0]'}`}>Forecast</button>
