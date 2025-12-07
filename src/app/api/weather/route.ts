@@ -63,28 +63,50 @@ export async function GET(req: NextRequest) {
         const omJson = await omRes.json();
         
         if (omJson.current) {
-          const valAqi = omJson.current.us_aqi;
-          const valUv = omJson.current.uv_index;
+          const valAqi = omJson.current.us_aqi ?? null;
+          const valUv = omJson.current.uv_index ?? null;
 
-          aqiData = {
-            aqi: valAqi,
-            status: getAqiStatus(valAqi)
-          };
-          uvIndex = valUv;
+          // Hanya update jika ada data valid
+          if (valAqi !== null) {
+            aqiData = {
+              aqi: valAqi,
+              status: getAqiStatus(valAqi)
+            };
+          }
+          
+          if (valUv !== null && valUv !== undefined) {
+            uvIndex = valUv;
+          }
           
           console.log(`✅ DATA BARU DIDAPAT: AQI ${valAqi}, UV ${valUv}`);
+        } else {
+          console.log("⚠️ Open-Meteo tidak return current data");
         }
       } catch (e) { 
         console.error("Open-Meteo Error:", e);
+        // uvIndex tetap 0 jika error
       }
+    } else {
+      console.log("⚠️ Lokasi lat/lon tidak valid");
     }
 
     // 3. Transform Data
-    const now = cuaca[0][0]; 
+    const now = cuaca[0][0];
+    
+    // Calculate min/max temperature untuk hari ini
+    let minTemp = parseInt(now.t);
+    let maxTemp = parseInt(now.t);
+    cuaca[0].forEach((hourData: any) => {
+      const temp = parseInt(hourData.t);
+      if (temp < minTemp) minTemp = temp;
+      if (temp > maxTemp) maxTemp = temp;
+    });
+    
     const currentWeather = {
       temp: parseInt(now.t),
       condition: parseCondition(now.weather_desc),
-      low: 24, high: 32,
+      low: minTemp,
+      high: maxTemp,
       windSpeed: parseInt(now.ws),
       windDir: now.wd,
       feelsLike: calculateFeelsLike(now.t, now.hu),
@@ -97,8 +119,18 @@ export async function GET(req: NextRequest) {
       time: now.local_datetime
     };
 
-    const forecastList = cuaca.map((dayData: any[]) => {
+    const forecastList = cuaca.map((dayData: any[], index: number) => {
       const d = dayData[0];
+      
+      // Calculate min/max temperature untuk hari ini
+      let minTemp = parseInt(d.t);
+      let maxTemp = parseInt(d.t);
+      dayData.forEach((hourData: any) => {
+        const temp = parseInt(hourData.t);
+        if (temp < minTemp) minTemp = temp;
+        if (temp > maxTemp) maxTemp = temp;
+      });
+      
       // Deteksi hujan dari data BMKG
       let hasRain = false;
       let totalRainfall = 0;
@@ -110,12 +142,19 @@ export async function GET(req: NextRequest) {
         totalRainfall += rainfall;
       });
       
+      // Generate label hari dengan "Today" untuk hari pertama
+      const date = new Date(d.local_datetime);
+      const isToday = index === 0;
+      const dayLabel = isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
+      const fullLabel = isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "long" });
+      
       return {
-        day: new Date(d.local_datetime).toLocaleDateString("en-US", { weekday: "short" }),
-        full: new Date(d.local_datetime).toLocaleDateString("en-US", { weekday: "long" }),
+        day: dayLabel,
+        full: fullLabel,
         condition: parseCondition(d.weather_desc),
         temp: parseInt(d.t),
-        low: 24, high: 32, 
+        low: minTemp,
+        high: maxTemp,
         rain: hasRain, 
         rainfall: totalRainfall, // Total mm untuk hari tersebut
         wind: parseInt(d.ws), 
@@ -125,9 +164,33 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // Jika forecast kurang dari 7 hari, extend dengan placeholder untuk 7 hari ke depan
+    const extendedForecast = [...forecastList];
+    if (extendedForecast.length < 7) {
+      const startDate = new Date(cuaca[0][0].local_datetime);
+      for (let i = extendedForecast.length; i < 7; i++) {
+        const futureDate = new Date(startDate);
+        futureDate.setDate(futureDate.getDate() + i);
+        extendedForecast.push({
+          day: futureDate.toLocaleDateString("en-US", { weekday: "short" }),
+          full: futureDate.toLocaleDateString("en-US", { weekday: "long" }),
+          condition: "Partly Cloudy",
+          temp: 28,
+          low: 24,
+          high: 32,
+          rain: false,
+          rainfall: 0,
+          wind: 10,
+          humidity: 65,
+          feelsLike: 28,
+          hourlyRainfall: []
+        });
+      }
+    }
+
     return NextResponse.json({
       current: currentWeather,
-      forecast: forecastList,
+      forecast: extendedForecast,
       location: dataLokasi.lokasi
     });
 

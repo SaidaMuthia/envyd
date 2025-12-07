@@ -6,14 +6,49 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import { VisibilityPyramid, UvGauge, RainChart } from "@/components/dashboard/Visuals";
+import { useLocation } from "@/context/LocationContext";
 
 export default function WeatherDetailsSlider() {
+  const { weather, forecast } = useLocation();
   const [detailIndex, setDetailIndex] = useState(0);
 
   const nextDetail = () => setDetailIndex((prev) => (prev === 2 ? 0 : prev + 1));
   const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 2 : prev - 1));
 
   const UNIFIED_TITLE_COLOR = "text-[#345B92]";
+
+  // Format visibility
+  const visibilityKm = weather?.visibility ? weather.visibility.toFixed(1) : "-";
+  const visibilityDesc = weather?.visibility ? 
+    (weather.visibility > 10 ? "Jarak pandang sangat baik untuk berkendara." : 
+     weather.visibility > 5 ? "Jarak pandang baik untuk berkendara. Waspada terhadap sedikit haze." :
+     "Jarak pandang terbatas. Berkendara dengan hati-hati.") 
+    : "Data tidak tersedia";
+
+  // --- PERBAIKAN LOGIKA UV DISINI ---
+  // Kita terima angka 0 sebagai nilai valid
+  const uvIndex = (weather?.uv !== undefined && weather?.uv !== null) ? weather.uv : 0;
+  
+  const uvStatus = (uvIndex === 0) ? "Rendah" : // 0 dianggap Rendah, bukan "-"
+                   uvIndex >= 11 ? "Sangat Tinggi" : 
+                   uvIndex >= 8 ? "Tinggi" : 
+                   uvIndex >= 6 ? "Sedang-Tinggi" :
+                   uvIndex >= 3 ? "Sedang" : "Rendah";
+
+  const uvDesc = (uvIndex === 0) ? "Aman. Tidak perlu perlindungan khusus saat ini." :
+                 uvIndex >= 11 ? "Stay inside. Lindungi kulit Anda sepenuhnya." :
+                 uvIndex >= 8 ? "Batasi waktu di luar. Gunakan perlindungan UV." :
+                 uvIndex >= 6 ? "Perlindungan UV direkomendasikan." :
+                 uvIndex >= 3 ? "Perlindungan UV disarankan." : "UV exposure minimal.";
+
+  // Format Rainfall - gunakan hari pertama forecast (today), default 0 jika tidak ada
+  const todayForecast = forecast && forecast.length > 0 ? forecast[0] : null;
+  const totalRainfall = todayForecast?.rainfall ?? 0;
+  const rainDesc = totalRainfall === 0 ? "Tidak ada hujan diperkirakan hari ini." :
+                   totalRainfall > 50 ? "Hujan lebat diperkirakan hari ini." :
+                   totalRainfall > 20 ? "Hujan sedang diperkirakan hari ini." :
+                   totalRainfall > 5 ? "Hujan ringan diperkirakan hari ini." :
+                   "Kemungkinan hujan kecil hari ini.";
 
   const slides = [
     {
@@ -22,8 +57,8 @@ export default function WeatherDetailsSlider() {
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/Visibility_icon.svg",
       component: <VisibilityPyramid />,
-      mainValue: "Visibility: 8 km",
-      desc: "Jarak pandang baik untuk berkendara. Waspada terhadap sedikit haze.",
+      mainValue: `Visibility: ${visibilityKm} km`,
+      desc: visibilityDesc,
       scale: "scale-100" 
     },
     {
@@ -31,9 +66,9 @@ export default function WeatherDetailsSlider() {
       title: "UV Index",
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/UV_icon.svg",
-      component: <UvGauge />,
-      mainValue: "Sangat Tinggi",
-      desc: "Stay inside.",
+      component: <UvGauge uvValue={uvIndex} />,
+      mainValue: uvStatus,
+      desc: uvDesc,
       scale: "scale-100" 
     },
     {
@@ -41,8 +76,10 @@ export default function WeatherDetailsSlider() {
       title: "Curah Hujan",
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/Curah_hujan_icon.svg",
-      component: <RainChart />,
-      isRainChart: true, 
+      component: <RainChart hourlyData={todayForecast?.hourlyRainfall || []} />,
+      isRainChart: true,
+      mainValue: totalRainfall === 0 ? "-" : `${totalRainfall.toFixed(1)} mm`,
+      desc: rainDesc,
       scale: "scale-100"
     }
   ];

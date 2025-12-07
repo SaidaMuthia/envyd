@@ -20,7 +20,7 @@ const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
 });
 
 export default function Home() {
-  const { forecast, loading } = useLocation(); // <--- GANTI DISINI
+  const { forecast, loading, weather } = useLocation(); // <--- TAMBAH weather
   
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next7">("today");
@@ -90,7 +90,7 @@ export default function Home() {
             footer={
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-xl font-bold text-[#1B1B1E]">{data.wind}</span>
+                        <span className="text-xl font-bold text-[#1B1B1E]">{data.wind || "-"}</span>
                         <span className="text-sm font-bold text-[#1B1B1E]">km/h</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kecepatan angin saat ini.</p>
@@ -105,10 +105,10 @@ export default function Home() {
             footer={
                 <div className="mt-auto w-full">
                      <div className="flex justify-between items-end mb-1 text-[#1B1B1E]">
-                        <span className="text-xs font-bold">Feels like: {data.feelsLike}°</span>
-                        <span className="text-xs font-bold">Temp: {data.temp}°</span>
+                        <span className="text-xs font-bold">Feels like: {data.feelsLike || "-"}°</span>
+                        <span className="text-xs font-bold">Temp: {data.temp || "-"}°</span>
                      </div>
-                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Udara terasa {data.feelsLike > data.temp ? "lebih panas" : "lebih dingin"}.</p>
+                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Udara terasa {data.feelsLike > data.temp ? "lebih panas" : data.feelsLike < data.temp ? "lebih dingin" : "sama"}.</p>
                 </div>
             }
          >
@@ -120,7 +120,7 @@ export default function Home() {
             footer={
                 <div className="mt-auto">
                     <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity}</span>
+                        <span className="text-xl font-bold text-[#1B1B1E]">{data.humidity || "-"}</span>
                         <span className="text-sm font-bold text-[#1B1B1E]">%</span>
                     </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kelembapan udara.</p>
@@ -169,10 +169,10 @@ export default function Home() {
                                         <div className="text-xs font-bold text-[#A3AED0] mt-1">Low: {item.low}° <br/> High: {item.high}°</div>
                                     </div>
                                     <div className="flex flex-col justify-center items-center text-[10px] font-medium text-[#1B1B1E] bg-gray-50 px-3 py-2 rounded-xl min-w-[100px] gap-1.5 shadow-sm">
-                                        <p>Wind: {item.wind} km/h</p>
-                                        <p>Feels: {item.feelsLike}°</p>
-                                        <p>Hum: {item.humidity}%</p>
-                                        <p>Vis: 8 km</p>
+                                        <p>Wind: {item.wind || "-"} km/h</p>
+                                        <p>Feels: {item.feelsLike || "-"}°</p>
+                                        <p>Hum: {item.humidity || "-"}%</p>
+                                        <p>Vis: {weather?.visibility ? weather.visibility.toFixed(1) : "-"} km</p>
                                     </div>
                                 </div>
                             </div>
@@ -215,15 +215,17 @@ export default function Home() {
         <div className="lg:col-span-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex gap-8 text-lg font-bold">
               <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
-              <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
               
               {activeMode === 'forecast' && (
+                <>
+                  <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
                   <button 
                     onClick={() => handleTabChange('next7')} 
                     className={`transition px-1 pb-1 ${timeView === 'next7' ? 'text-[#1B1B1E] border-b-2 border-[#1B1B1E]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
                   >
                     Next 7 days
                   </button>
+                </>
               )}
             </div>
             <div className="bg-white p-1 rounded-full shadow-sm flex items-center">

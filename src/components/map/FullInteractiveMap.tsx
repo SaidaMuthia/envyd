@@ -160,7 +160,7 @@ export default function FullInteractiveMap() {
         zoomControl={false}
         maxBounds={INDONESIA_BOUNDS as any}
         maxBoundsViscosity={1.0}
-        minZoom={4}
+        minZoom={5}
         maxZoom={18}
       >
         <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
