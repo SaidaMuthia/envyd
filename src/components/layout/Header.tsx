@@ -101,7 +101,7 @@ export default function Header() {
         )}
       </div>
 
-      {/* 3. BAGIAN KANAN: Dark Mode (ASLI) */}
+      {/* 3. BAGIAN KANAN: Dark Mode (ASLI)
       <div className="flex items-center shrink-0">
         <button 
           onClick={() => setIsDarkMode(!isDarkMode)}
@@ -126,7 +126,7 @@ export default function Header() {
              )}
           </div>
         </button>
-      </div>
+      </div> */}
 
       </div>
     </header>

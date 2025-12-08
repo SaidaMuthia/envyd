@@ -1,11 +1,9 @@
-//
-
 "use client";
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
-import { VisibilityPyramid, UvGauge, RainChart } from "@/components/dashboard/Visuals";
+import { VisibilityPyramid, UvGauge } from "@/components/dashboard/Visuals";
 import { useLocation } from "@/context/LocationContext";
 
 const getUvStatus = (uvIndex: number) => {
@@ -20,15 +18,21 @@ export default function WeatherDetailsSlider() {
   const [detailIndex, setDetailIndex] = useState(0);
   const { forecast, loading, weather } = useLocation();
   const safeData = weather || (forecast.length > 0 ? forecast[0] : null);
-  const nextDetail = () => setDetailIndex((prev) => (prev === 2 ? 0 : prev + 1));
-  const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 2 : prev - 1));
-  const visibilityKm = safeData && safeData.visibility !== undefined
+  
+  // Navigation functions updated for 2 slides (indices 0 and 1)
+  const nextDetail = () => setDetailIndex((prev) => (prev === 1 ? 0 : prev + 1));
+  const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 1 : prev - 1));
+  
+  // --- PERBAIKAN DISPLAY VISIBILITY ---
+  // Pastikan 0 ditampilkan sebagai string "0.0", bukan falsy value
+  const visibilityKm = (safeData && typeof safeData.visibility === 'number')
       ? safeData.visibility.toFixed(1)
-      : (loading ? '...' : 'N/A');
-  const currentUvIndex = safeData ? (safeData.uv || 0) : 0; 
+      : (loading ? "..." : "0.0");
+
+  const currentUvIndex = (weather?.uv !== undefined) ? weather.uv : 0; 
   const uvStatus = getUvStatus(currentUvIndex);
   const uvDesc = currentUvIndex >= 8 
-        ? "Wajib gunakan pelindung. Hindari matahari pukul 10-4." 
+        ? "Wajib gunakan pelindung." 
         : "Amankan diri dengan topi dan kacamata hitam.";
 
   const UNIFIED_TITLE_COLOR = "text-[#345B92]";
@@ -49,19 +53,10 @@ export default function WeatherDetailsSlider() {
       title: "UV Index",
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/UV_icon.svg",
-      component: <UvGauge />,
+      component: <UvGauge uvValue={currentUvIndex} />,
       mainValue: uvStatus,
-      desc: "Stay inside.",
+      desc: uvDesc,
       scale: "scale-100" 
-    },
-    {
-      id: "rain",
-      title: "Curah Hujan",
-      color: UNIFIED_TITLE_COLOR,
-      icon: "/images/Curah_hujan_icon.svg",
-      component: <RainChart />,
-      isRainChart: true, 
-      scale: "scale-100"
     }
   ];
 
@@ -69,62 +64,51 @@ export default function WeatherDetailsSlider() {
 
   return (
     <StatCard className="h-full relative overflow-hidden p-0!"> 
-        {/* Container Utama */}
-        <div className="flex flex-col h-full w-full p-6 relative">
+        <div className="flex flex-col h-full w-full p-5 relative">
             
-            {/* --- NAVIGATION ARROWS (ABSOLUTE POSITION) --- */}
-            {/* Tombol ini sekarang mengambang & terkunci posisinya, tidak akan ikut bergeser */}
-            <button 
-                onClick={prevDetail} 
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer"
-            >
-                <ChevronLeft size={24} /> {/* Ukuran diperkecil, tanpa bg */}
-            </button>
+            {/* Header */}
+            <div className="flex items-center gap-3 h-8 shrink-0 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center">
+                    <img 
+                        src={currentSlide.icon} 
+                        alt={currentSlide.title} 
+                        className="w-5 h-5"
+                        onError={(e) => e.currentTarget.src = ''} 
+                    />
+                </div>
+                <span className={`font-bold text-base ${currentSlide.color}`}>
+                    {currentSlide.title}
+                </span>
+            </div>
 
-            <button 
-                onClick={nextDetail} 
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer"
-            >
-                <ChevronRight size={24} /> {/* Ukuran diperkecil, tanpa bg */}
-            </button>
-
-
-            {/* --- CONTENT AREA --- */}
-            <div className="flex flex-col h-full animate-in fade-in zoom-in duration-300 px-4"> {/* px-4 memberi jarak agar konten tidak kena arrow */}
-                
-                {/* Header */}
-                <div className="flex items-center gap-3 h-8 shrink-0 mb-1">
-                    <div className="w-8 h-8 flex items-center justify-center">
-                        <img 
-                            src={currentSlide.icon} 
-                            alt={currentSlide.title} 
-                            className="w-6 h-6"
-                            onError={(e) => e.currentTarget.src = ''} 
-                        />
-                    </div>
-                    <span className={`font-bold text-base ${currentSlide.color}`}>
-                        {currentSlide.title}
-                    </span>
+            {/* Visual Grid */}
+            <div className="flex-1 grid grid-cols-[20px_1fr_20px] items-center w-full my-1">
+                <div className="flex justify-start">
+                    <button onClick={prevDetail} className="text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer">
+                        <ChevronLeft size={16} />
+                    </button>
                 </div>
 
-                {/* Visual - Flexible Height */}
-                <div className={`flex-1 flex justify-center items-center w-full overflow-visible ${currentSlide.scale}`}>
+                <div className={`w-full flex justify-center items-center h-full overflow-visible ${currentSlide.scale}`}>
                     {currentSlide.component}
                 </div>
 
-                {/* Footer Info */}
-                {/* Tinggi footer menyesuaikan: Hilang saat RainChart agar grafik bisa besar */}
-                <div className={`mt-auto flex flex-col justify-end ${currentSlide.isRainChart ? 'min-h-0' : 'min-h-[60px]'}`}>
-                    {currentSlide.isRainChart ? null : (
-                        <div className="w-full">
-                            <div className="text-2xl font-bold text-[#1B1B1E] mb-1">
-                                {currentSlide.mainValue}
-                            </div>
-                            <p className="text-xs text-[#A3AED0] leading-relaxed line-clamp-2">
-                                {currentSlide.desc}
-                            </p>
-                        </div>
-                    )}
+                <div className="flex justify-end">
+                    <button onClick={nextDetail} className="text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer">
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-auto flex flex-col justify-end h-[60px]">
+                <div className="w-full">
+                    <div className="text-xl font-bold text-[#1B1B1E] mb-1 truncate">
+                        {currentSlide.mainValue}
+                    </div>
+                    <p className="text-[10px] text-[#A3AED0] leading-snug line-clamp-2">
+                        {currentSlide.desc}
+                    </p>
                 </div>
             </div>
 

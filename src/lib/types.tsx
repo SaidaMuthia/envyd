@@ -10,13 +10,17 @@ export interface WeatherData {
   visibility: number;
   aqi: number;
   aqiStatus: string;
-  uv?: number; // Tambahan field UV (opsional agar aman)
+  uv?: number;
   time?: string;
 }
 
 export interface ForecastItem {
   day: string;  
   full: string; 
+  // Field Baru untuk Tampilan Tanggal
+  weekday?: string;    // contoh: "Monday"
+  dateDisplay?: string; // contoh: "12 Dec"
+  
   condition: string;
   temp: number;
   low: number;
@@ -29,4 +33,6 @@ export interface ForecastItem {
   windDir: string;
   visibility: number;
   uv: number;
+  hourlyRainfall?: Array<{ time: string; rainfall: number }>;
+  time?: string;
 }
