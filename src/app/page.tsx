@@ -1,3 +1,5 @@
+//
+
 "use client";
 
 import dynamic from "next/dynamic";
@@ -8,42 +10,52 @@ import WeatherMain from "@/components/dashboard/WeatherMain";
 import AqiCard from "@/components/dashboard/AqiCard";
 import WeatherDetailsSlider from "@/components/dashboard/WeatherDetailSlider";
 
-// Visuals & Icons
 import { WindCompass, FeelsLikeSlider, HumidityBars } from "@/components/dashboard/Visuals";
 import { Wind, ArrowLeft, X, Sun, Cloud, CloudRain, CloudSun } from "lucide-react";
-import { useLocation } from "@/context/LocationContext"; // IMPORT CONTEXT
+import { useLocation } from "@/context/LocationContext";
 
-// Import Map
 const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
   ssr: false,
   loading: () => <div className="h-[350px] w-full bg-gray-200 animate-pulse rounded-[30px]">Loading Map...</div>
 });
 
 export default function Home() {
-  const { forecast, loading } = useLocation(); // <--- GANTI DISINI
+  const { forecast, loading } = useLocation();
   
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
+  // Default view "today"
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next2">("today");
   const [isMapWide, setIsMapWide] = useState(false);
-  const [selectedForecastDay, setSelectedForecastDay] = useState<number>(0);
+  
+  // UBAH STATE: Menggunakan array number[] agar bisa multi-select (banyak kartu terbuka)
+  // Default [0] artinya kartu pertama (Today) langsung terbuka
+  const [expandedDays, setExpandedDays] = useState<number[]>([0]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // --- KITA PAKAI DATA DARI CONTEXT (forecast), BUKAN HARDCODE ---
-  // Jika masih loading, kita pakai array kosong atau dummy agar tidak error saat render
   const safeForecast = (loading || forecast.length === 0) ? [] : forecast;
 
   const handleTabChange = (view: "today" | "tomorrow" | "next2") => {
     setTimeView(view);
-    if (view === 'next2') setSelectedForecastDay(0);
+    // Reset selection saat ganti tab jika perlu, atau biarkan state sebelumnya
+    // if (view === 'next2') setExpandedDays([0]); 
   };
 
   const handleModeChange = (mode: "forecast" | "aqi") => {
     setActiveMode(mode);
-    // PERBAIKAN: Jika pindah ke AQI, reset ke Today jika sedang di Tomorrow atau Next2
     if (mode === 'aqi' && (timeView === 'next2' || timeView === 'tomorrow')) {
         setTimeView('today');
     }
+  };
+
+  // Logic Toggle: Klik -> Buka, Klik Lagi -> Tutup (Tanpa menutup yang lain)
+  const toggleDayCard = (index: number) => {
+    setExpandedDays(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(i => i !== index); // Tutup jika sudah terbuka
+      } else {
+        return [...prev, index]; // Buka (tambahkan ke list)
+      }
+    });
   };
 
   const getIcon = (condition: string, size: number = 64) => {
@@ -55,35 +67,17 @@ export default function Home() {
     else return <Sun size={size} className="text-yellow-400 fill-yellow-400" />;
   };
 
-  const handleCardClick = (index: number, e: React.MouseEvent<HTMLDivElement>) => {
-    setSelectedForecastDay(index);
-    if (scrollContainerRef.current) {
-        const container = scrollContainerRef.current;
-        const card = e.currentTarget;
-        const scrollLeft = card.offsetLeft - (container.clientWidth / 2) + (card.clientWidth / 2);
-        container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-    }
-  };
-
-  // --- RENDER FUNCTIONS (TIDAK UBAH DESAIN) ---
   const renderStandardDashboard = () => {
     if (loading || safeForecast.length === 0) return <div className="p-10 text-center">Loading Data...</div>;
 
     const isTomorrow = timeView === 'tomorrow';
-    // Ambil index 0 (hari ini) atau 1 (besok) dari data API
     const data = isTomorrow ? (safeForecast[1] || safeForecast[0]) : safeForecast[0];
     const title = isTomorrow ? "Tomorrow" : "Today";
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full min-h-[280px]">
          <div className="h-full">
-            <WeatherMain 
-               title={title} 
-               temp={data.temp} 
-               condition={data.condition}
-               low={data.low}
-               high={data.high}
-            />
+            <WeatherMain title={title} temp={data.temp} condition={data.condition} low={data.low} high={data.high} time={data.time} />
          </div>
          <StatCard 
             icon={<img src="/images/Wind_icon.svg" alt="Wind" className="w-5 h-5" />}
@@ -96,7 +90,7 @@ export default function Home() {
                     </div>
                     <div className="flex items-center gap-1 mb-1">
                          <span className="text-sm font-semibold text-[#1B1B1E]">Arah:</span>
-                         <span className="text-sm font-bold text-blue-600">{data.windDir}</span> {/* Menggunakan data.windDir */}
+                         <span className="text-sm font-bold text-blue-600">{data.windDir}</span>
                      </div>
                     <p className="text-[10px] text-[#A3AED0] font-medium leading-tight">Kecepatan angin saat ini.</p>
                 </div>
@@ -138,55 +132,109 @@ export default function Home() {
     );
   };
 
+  // 2. Tampilan Next 2 Days (DIPERBAIKI: Layout Samping & Multi-Select)
   const renderNext2Days = () => {
     return (
       <div 
         ref={scrollContainerRef}
-        className="w-full elegant-scrollbar px-1 pt-1 h-full min-h-[280px] flex items-center pr-4"
+        className="w-full h-full min-h-[280px] overflow-x-auto pb-2 px-1 scrollbar-hide"
       >
         <div className="flex gap-4 h-full min-w-max">
-            {/* Ganti forecastData dengan safeForecast (Data API) */}
+            
             {safeForecast.map((item, index) => {
-                const isSelected = selectedForecastDay === index;
+                const isSelected = expandedDays.includes(index);
+
                 return (
                     <div 
                         key={index}
-                        onClick={(e) => handleCardClick(index, e)}
+                        onClick={() => toggleDayCard(index)}
                         className={`
-                            relative rounded-[30px] p-5 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] cursor-pointer shadow-sm border border-transparent
-                            flex flex-col overflow-hidden h-full 
+                            relative rounded-[30px] p-5 transition-all duration-300 ease-in-out cursor-pointer shadow-sm border border-transparent
+                            flex flex-col overflow-hidden h-full shrink-0
                             ${isSelected 
-                                ? 'w-[320px] bg-white ring-2 ring-blue-50 z-10' 
-                                : 'w-[110px] bg-[#E5F0FF] hover:bg-white hover:shadow-md'
+                                ? 'w-[420px] bg-white ring-2 ring-blue-50 z-10 shadow-md' // Lebih lebar untuk layout samping
+                                : 'w-[100px] bg-[#E5F0FF] hover:bg-white hover:shadow-md'
                             }
                         `}
                     >
                         {isSelected ? (
-                            <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-2 duration-700 delay-100">
-                                <div className="flex justify-between items-start w-full">
-                                    <h3 className="text-2xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1 whitespace-nowrap">{item.full}</h3>
-                                    <span className="text-xs font-bold text-[#A3AED0] mt-1.5 ml-2">12:00 PM</span>
-                                </div>
-                                <div className="flex-1 flex items-center justify-start pl-4 py-2">{getIcon(item.condition, 72)}</div>
-                                <div className="flex items-end justify-between mt-auto w-full">
-                                    <div>
-                                        <span className="text-5xl font-bold text-[#1B1B1E] tracking-tighter">{item.temp}°</span>
-                                        <div className="text-xs font-bold text-[#A3AED0] mt-1">Low: {item.low}° <br/> High: {item.high}°</div>
+                            // --- MODE EXPANDED (HORIZONTAL LAYOUT) ---
+                            <div className="flex h-full w-full animate-in fade-in duration-300 gap-4">
+                                
+                                {/* KIRI: Info Utama */}
+                                <div className="flex flex-col justify-between w-1/2">
+                                    <div className="flex justify-between items-start w-full">
+                                        <h3 className="text-xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1 whitespace-nowrap">
+                                            {item.day}
+                                        </h3>
                                     </div>
-                                    <div className="flex flex-col justify-center items-center text-[10px] font-medium text-[#1B1B1E] bg-gray-50 px-3 py-2 rounded-xl min-w-[100px] gap-1.5 shadow-sm">
-                                        <p>Wind: {item.wind} km/h</p>
-                                        <p>Feels: {item.feelsLike}°</p>
-                                        <p>Hum: {item.humidity}%</p>
-                                        <p>Vis: {item.visibility} km</p>
+
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                        <div className="transform scale-100">
+                                            {getIcon(item.condition, 64)} 
+                                        </div>
+                                        <div className="text-center">
+                                            <span className="text-4xl font-bold text-[#1B1B1E] tracking-tighter block">
+                                                {item.temp}°
+                                            </span>
+                                            <span className="text-xs text-[#A3AED0] font-medium">
+                                                {item.condition}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-xs font-medium text-[#A3AED0] mt-1">
+                                        {item.time || "12:00 PM"}
                                     </div>
                                 </div>
+
+                                {/* KANAN: Detail Box (Memanjang ke bawah di sisi kanan) */}
+                                <div className="w-1/2 bg-[#F4F7FE] rounded-2xl p-4 flex flex-col justify-center gap-3 h-full shadow-inner">
+                                    {/* Temp Range */}
+                                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                        <span className="text-[10px] text-[#A3AED0] font-bold uppercase">Temp</span>
+                                        <span className="text-xs font-bold text-[#1B2559]">{item.low}° - {item.high}°</span>
+                                    </div>
+                                    
+                                    {/* Wind */}
+                                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                        <span className="text-[10px] text-[#A3AED0] font-bold uppercase">Wind</span>
+                                        <span className="text-xs font-bold text-[#1B2559]">{item.wind} km</span>
+                                    </div>
+
+                                    {/* Humidity */}
+                                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                                        <span className="text-[10px] text-[#A3AED0] font-bold uppercase">Humid</span>
+                                        <span className="text-xs font-bold text-[#1B2559]">{item.humidity}%</span>
+                                    </div>
+
+                                    {/* Feels Like */}
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px] text-[#A3AED0] font-bold uppercase">Feels</span>
+                                        <span className="text-xs font-bold text-[#1B2559]">{item.feelsLike}°</span>
+                                    </div>
+                                </div>
+
                             </div>
                         ) : (
-                           <div className="flex flex-col justify-between h-full items-center w-full animate-in fade-in duration-500">
-                                <div className="w-full flex justify-center"><span className="text-xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1">{item.day}</span></div>
-                                <div className="flex flex-col items-center gap-2 flex-1 justify-center"><div className="drop-shadow-sm scale-90">{getIcon(item.condition, 48)}</div></div>
-                                <div className="text-4xl font-medium text-[#1B1B1E] text-center mb-2">{item.temp}°</div>
-                           </div>
+                            // --- MODE COMPACT (TETAP SAMA) ---
+                            <div className="flex flex-col justify-between h-full items-center w-full animate-in fade-in duration-500 py-2">
+                                <div className="w-full flex justify-center">
+                                    <span className="text-xl font-bold text-[#1B1B1E] border-b-2 border-[#1B1B1E] pb-1">
+                                        {item.day}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+                                    <div className="drop-shadow-sm scale-90 opacity-90">
+                                        {getIcon(item.condition, 48)}
+                                    </div>
+                                </div>
+
+                                <div className="text-3xl font-medium text-[#1B1B1E] text-center mb-2">
+                                    {item.temp}°
+                                </div>
+                            </div>
                         )}
                     </div>
                 );
@@ -198,9 +246,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-[1920px] mx-auto font-sans bg-[#F4F7FE] relative text-[#1B2559]">
-      {/* Map Overlay */}
       {isMapWide && (
-        // ... (Kode overlay map asli) ...
         <div className="fixed inset-0 z-9999 bg-[#F4F7FE]/95 backdrop-blur-sm p-4 md:p-10 flex flex-col animate-in fade-in duration-200">
             <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-full shadow-lg max-w-4xl mx-auto w-full">
                 <button onClick={() => setIsMapWide(false)} className="p-2 hover:bg-gray-100 rounded-full transition"><ArrowLeft size={24}/></button>
@@ -215,35 +261,15 @@ export default function Home() {
 
       <Header />
       
-<div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 px-1 mt-8 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6 px-1 mt-8 items-end">
         <div className="lg:col-span-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex gap-8 text-lg font-bold">
-              {/* TOMBOL TODAY (Selalu Ada) */}
-              <button 
-                onClick={() => handleTabChange('today')} 
-                className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-              >
-                Today
-              </button>
-
-              {/* TOMBOL TOMORROW (Hanya di mode Forecast) */}
+              <button onClick={() => handleTabChange('today')} className={`transition px-1 pb-1 ${timeView === 'today' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Today</button>
               {activeMode === 'forecast' && (
-                <button 
-                    onClick={() => handleTabChange('tomorrow')} 
-                    className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-                >
-                    Tomorrow
-                </button>
+                <button onClick={() => handleTabChange('tomorrow')} className={`transition px-1 pb-1 ${timeView === 'tomorrow' ? 'text-[#1B2559] border-b-2 border-[#1B2559]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Tomorrow</button>
               )}
-              
-              {/* TOMBOL NEXT 2 DAYS (Hanya di mode Forecast) */}
               {activeMode === 'forecast' && (
-                  <button 
-                    onClick={() => handleTabChange('next2')} 
-                    className={`transition px-1 pb-1 ${timeView === 'next2' ? 'text-[#1B1B1E] border-b-2 border-[#1B1B1E]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}
-                  >
-                    Next 2 days
-                  </button>
+                  <button onClick={() => handleTabChange('next2')} className={`transition px-1 pb-1 ${timeView === 'next2' ? 'text-[#1B1B1E] border-b-2 border-[#1B1B1E]' : 'text-[#A3AED0] hover:text-[#1B2559]'}`}>Next 2 days</button>
               )}
             </div>
 

@@ -1,3 +1,5 @@
+//
+
 export interface WeatherData {
   temp: number;
   condition: string;
@@ -10,7 +12,7 @@ export interface WeatherData {
   visibility: number;
   aqi: number;
   aqiStatus: string;
-  uv?: number; // Tambahan field UV (opsional agar aman)
+  uv?: number;
   time?: string;
 }
 
@@ -29,4 +31,6 @@ export interface ForecastItem {
   windDir: string;
   visibility: number;
   uv: number;
+  hourlyRainfall?: Array<{ time: string; rainfall: number }>;
+  time?: string; 
 }

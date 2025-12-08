@@ -1,11 +1,7 @@
-//
-
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic'; 
 export const revalidate = 0;
-
-// ... (Helper Functions: getAqiStatus, parseCondition, calculateFeelsLike, parseWindDirection, findDailyMinMax TETAP SAMA - Tidak saya tulis ulang agar hemat tempat)
 
 function getAqiStatus(aqi: number) {
   if (aqi <= 50) return "Good";
@@ -75,7 +71,6 @@ export async function GET(req: NextRequest) {
 
     if (!adm4) return NextResponse.json({ error: "No ADM4" }, { status: 400 });
 
-    // 1. Fetch BMKG
     const bmkgRes = await fetch(`https://api.bmkg.go.id/publik/prakiraan-cuaca?adm4=${adm4}`, { 
         cache: 'no-store' 
     });
@@ -85,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     if (!cuaca) return NextResponse.json({ error: "No Data" }, { status: 404 });
 
-    // 2. Fetch OPEN-METEO
+    // Fetch UV & AQI from Open-Meteo
     let aqiData = { aqi: 0, status: "-" };
     let uvIndex = 0; 
 
@@ -114,7 +109,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3. Transform Data
     const todayMinMax = findDailyMinMax(cuaca[0]); 
     const now = cuaca[0][0]; 
     
@@ -135,18 +129,25 @@ export async function GET(req: NextRequest) {
       time: now.local_datetime
     };
 
-    // Proses Data Forecast Real dari BMKG
-    const forecastList = cuaca.map((dayData: any[], index: number) => {
+const forecastList = cuaca.map((dayData: any[], index: number) => {
       const d = dayData[0];
       const dailyMinMax = findDailyMinMax(dayData); 
       
       const date = new Date(d.local_datetime);
       const isToday = index === 0;
       
+      // Format Jam (Misal: 12:00 PM)
+      const timeString = date.toLocaleTimeString("en-US", { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: true 
+      });
+
       return {
-        // Label hari
         day: isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" }),
         full: isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "long" }),
+        // DATA BARU: Masukkan waktu dari data BMKG
+        time: timeString,
         condition: parseCondition(d.weather_desc),
         temp: parseInt(d.t),
         low: dailyMinMax.low,
@@ -159,20 +160,16 @@ export async function GET(req: NextRequest) {
         humidity: parseInt(d.hu), 
         feelsLike: calculateFeelsLike(parseInt(d.t), parseInt(d.hu)), 
         uv: 0,
-        // Data hourly untuk grafik (jika ada)
         hourlyRainfall: dayData.map((h: any) => ({ 
             time: new Date(h.local_datetime).toLocaleTimeString("en-US", { hour: '2-digit', hour12: true }),
-            rainfall: 0 
+            rainfall: parseFloat(h.ch) || 0 
         }))
       };
     });
 
-    // --- PERUBAHAN: LOGIKA EXTEND DIHAPUS TOTAL ---
-    // Kita langsung mengembalikan data asli yang didapat (misal cuma 3 hari)
-    
     return NextResponse.json({
       current: currentWeather,
-      forecast: forecastList, // <--- Data asli saja (biasanya length 3)
+      forecast: forecastList, 
       location: dataLokasi.lokasi
     });
 

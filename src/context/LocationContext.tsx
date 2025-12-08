@@ -2,10 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { WeatherData, ForecastItem } from '@/lib/types';
 
-interface DashboardMapProps {
-  onExpand?: () => void;
-  isExpanded?: boolean;
-}
 const defaultForecast: ForecastItem[] = Array(8).fill({
   day: "-", 
   full: "Loading...", 
@@ -17,11 +13,12 @@ const defaultForecast: ForecastItem[] = Array(8).fill({
   wind: 0, 
   humidity: 0, 
   feelsLike: 0,
-  // ⭐️ TAMBAHKAN INI UNTUK MENGHILANGKAN ERROR DEFAULT ⭐️
   windDirCode: "-", 
-  windDir: "Loading Direction", // Memberi nilai string default
+  windDir: "Loading Direction",
+  visibility: 0,
+  uv: 0,
+  hourlyRainfall: []
 });
-// Struktur data default agar UI tidak error saat loading
 
 type LocationType = {
   name: string;
@@ -41,7 +38,6 @@ interface LocationContextType {
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
 
 export function LocationProvider({ children }: { children: ReactNode }) {
-  // Default: Makassar (sesuai kode temanmu)
   const [activeLocation, setActiveLocation] = useState<LocationType>({
     name: "Makassar, Indonesia",
     adm4: "73.71.11.1001", 

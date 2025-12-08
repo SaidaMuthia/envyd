@@ -20,11 +20,16 @@ export default function WeatherDetailsSlider() {
   const [detailIndex, setDetailIndex] = useState(0);
   const { forecast, loading, weather } = useLocation();
   const safeData = weather || (forecast.length > 0 ? forecast[0] : null);
+  
+  const rainData = forecast.length > 0 ? forecast[0].hourlyRainfall : [];
+
   const nextDetail = () => setDetailIndex((prev) => (prev === 2 ? 0 : prev + 1));
   const prevDetail = () => setDetailIndex((prev) => (prev === 0 ? 2 : prev - 1));
+  
   const visibilityKm = safeData && safeData.visibility !== undefined
       ? safeData.visibility.toFixed(1)
       : (loading ? '...' : 'N/A');
+      
   const currentUvIndex = safeData ? (safeData.uv || 0) : 0; 
   const uvStatus = getUvStatus(currentUvIndex);
   const uvDesc = currentUvIndex >= 8 
@@ -49,7 +54,7 @@ export default function WeatherDetailsSlider() {
       title: "UV Index",
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/UV_icon.svg",
-      component: <UvGauge />,
+      component: <UvGauge uvValue={currentUvIndex} />,
       mainValue: uvStatus,
       desc: "Stay inside.",
       scale: "scale-100" 
@@ -59,7 +64,7 @@ export default function WeatherDetailsSlider() {
       title: "Curah Hujan",
       color: UNIFIED_TITLE_COLOR,
       icon: "/images/Curah_hujan_icon.svg",
-      component: <RainChart />,
+      component: <RainChart hourlyData={rainData} />,
       isRainChart: true, 
       scale: "scale-100"
     }
@@ -69,28 +74,28 @@ export default function WeatherDetailsSlider() {
 
   return (
     <StatCard className="h-full relative overflow-hidden p-0!"> 
-        {/* Container Utama */}
+        {/* Padding standar, arrow akan absolute di atasnya */}
         <div className="flex flex-col h-full w-full p-6 relative">
             
-            {/* --- NAVIGATION ARROWS (ABSOLUTE POSITION) --- */}
-            {/* Tombol ini sekarang mengambang & terkunci posisinya, tidak akan ikut bergeser */}
+            {/* --- ARROWS (ABSOLUTE POSITION - STAY) --- */}
+            {/* Tidak punya background, hanya icon kecil */}
             <button 
                 onClick={prevDetail} 
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer p-2"
             >
-                <ChevronLeft size={24} /> {/* Ukuran diperkecil, tanpa bg */}
+                <ChevronLeft size={20} />
             </button>
 
             <button 
                 onClick={nextDetail} 
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 text-[#2B3674]/40 hover:text-[#2B3674] transition-colors cursor-pointer p-2"
             >
-                <ChevronRight size={24} /> {/* Ukuran diperkecil, tanpa bg */}
+                <ChevronRight size={20} />
             </button>
 
-
-            {/* --- CONTENT AREA --- */}
-            <div className="flex flex-col h-full animate-in fade-in zoom-in duration-300 px-4"> {/* px-4 memberi jarak agar konten tidak kena arrow */}
+            {/* --- CONTENT CONTAINER --- */}
+            {/* px-4 untuk memberi jarak dari arrow */}
+            <div className="flex flex-col h-full w-full px-4 animate-in fade-in zoom-in duration-300">
                 
                 {/* Header */}
                 <div className="flex items-center gap-3 h-8 shrink-0 mb-1">
@@ -107,20 +112,23 @@ export default function WeatherDetailsSlider() {
                     </span>
                 </div>
 
-                {/* Visual - Flexible Height */}
+                {/* Visual Area - Mengisi ruang tengah */}
                 <div className={`flex-1 flex justify-center items-center w-full overflow-visible ${currentSlide.scale}`}>
                     {currentSlide.component}
                 </div>
 
-                {/* Footer Info */}
-                {/* Tinggi footer menyesuaikan: Hilang saat RainChart agar grafik bisa besar */}
-                <div className={`mt-auto flex flex-col justify-end ${currentSlide.isRainChart ? 'min-h-0' : 'min-h-[60px]'}`}>
-                    {currentSlide.isRainChart ? null : (
+                {/* Footer Info - Konsisten 60px */}
+                <div className={`mt-auto min-h-[60px] flex flex-col justify-end`}>
+                    {currentSlide.isRainChart ? (
+                        // Footer Kosong tapi Tinggi Tetap Ada (Spacer)
+                        // Label text sudah ada di Visuals.tsx
+                        <div className="w-full h-full" />
+                    ) : (
                         <div className="w-full">
-                            <div className="text-2xl font-bold text-[#1B1B1E] mb-1">
+                            <div className="text-xl font-bold text-[#1B1B1E] mb-1 truncate">
                                 {currentSlide.mainValue}
                             </div>
-                            <p className="text-xs text-[#A3AED0] leading-relaxed line-clamp-2">
+                            <p className="text-[10px] text-[#A3AED0] leading-snug line-clamp-2">
                                 {currentSlide.desc}
                             </p>
                         </div>
