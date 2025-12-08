@@ -69,7 +69,7 @@ export default function Home() {
   const tomorrowLabel = safeForecast[1] && safeForecast[1].dateDisplay !== "-" ? `Tomorrow, ${safeForecast[1].dateDisplay}` : "Tomorrow";
   const next2Label = (safeForecast[2] && safeForecast[3]) ? `${safeForecast[2].day} - ${safeForecast[3].day}` : "Next 2 days";
 
-  // --- RENDER FUNCTIONS ---
+  // Render functions
   const renderStandardDashboard = () => {
     if (loading && !weather) return <div className="p-10 text-center">Loading Data...</div>;
 

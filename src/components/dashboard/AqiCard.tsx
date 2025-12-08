@@ -11,7 +11,7 @@ export default function AqiCard() {
   
   // Logic Status & Warna (Biar teks Good berubah jadi Moderate dst)
   let status = "Good";
-  let color = "#05CD99"; // Hijau asli
+  let color = "#05CD99";
   
   if (aqi > 300) { status = "Hazardous"; color = "#7E0023"; }
   else if (aqi > 200) { status = "Very Unhealthy"; color = "#660099"; }
@@ -38,26 +38,21 @@ export default function AqiCard() {
        </div>
 
        {/* Gradient Bar */}
-       {/* Menggunakan class asli bg-linear-to-r dari kode temanmu */}
        <div className="relative w-full h-3 rounded-full bg-linear-to-r from-[#05CD99] via-[#FFB547] to-[#EE5D50] my-4">
          
-         {/* INDICATOR: HAPUS 'left-[20%]', GANTI JADI STYLE */}
          <div 
             className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-[3px] rounded-full shadow-lg z-10 cursor-pointer transition-all duration-1000 ease-out"
             style={{ 
-                left: `${percent}%`,        // Posisi Dinamis
-                borderColor: color          // Warna Border Dinamis
+                left: `${percent}%`,
+                borderColor: color
             }}
          ></div>
        </div>
 
-       {/* Stats */}
        <div className="flex flex-col md:flex-row justify-between items-end mt-4">
          <div>
             <div className="flex items-baseline gap-2">
-                {/* ANGKA DINAMIS */}
                 <h2 className="text-6xl font-bold text-[#1B1B1E] leading-none">{aqi}</h2>
-                {/* TEKS STATUS DINAMIS */}
                 <span className="font-bold text-xl" style={{ color: color }}>{status}</span>
             </div>
          </div>

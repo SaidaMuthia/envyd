@@ -1,13 +1,12 @@
 "use client";
 
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
-// @ts-ignore
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation"; 
 import { useLocation } from "@/context/LocationContext"; 
-import { Maximize2 } from "lucide-react"; // Tambahkan Icon
+import { Maximize2 } from "lucide-react"; 
 
 // Icon Marker Default
 const icon = L.icon({
@@ -81,7 +80,7 @@ export default function DashboardMap({
         {onLocationSelect && <ClickHandler onMapClick={onLocationSelect} />} 
       </MapContainer>
       
-      {/* TOMBOL VIEW WIDE (Layout Diperbaiki) */}
+      {/* TOMBOL VIEW WIDE (Layout Diperbaiki dengan z-[1000]) */}
       {!isExpanded && (
         <button 
             onClick={onExpand ? onExpand : () => router.push('/map')} 

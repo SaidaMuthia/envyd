@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
 
     const nowTime = new Date();
     
-    // Logic: Pilih slot waktu terdekat dengan JAM SEKARANG (untuk Today)
+    // Pilih slot waktu terdekat dengan JAM SEKARANG (untuk Today)
     const getBestSlot = (slots: any[], isCurrentDay: boolean) => {
         if (!slots || slots.length === 0) return null;
         let best = slots[0];
@@ -144,7 +144,7 @@ export async function GET(req: NextRequest) {
       aqi: aqiData.aqi,
       aqiStatus: aqiData.status,
       uv: uvIndex, 
-      time: nowTimeString // Kirim waktu terformat
+      time: nowTimeString
     };
 
     // Forecast List Logic
@@ -155,7 +155,6 @@ export async function GET(req: NextRequest) {
       
       const date = new Date(d.local_datetime);
       
-      // === FORMAT WAKTU UNTUK CARD ===
       const timeString = date.toLocaleTimeString("en-US", { 
           hour: '2-digit', 
           minute: '2-digit', 
@@ -168,7 +167,7 @@ export async function GET(req: NextRequest) {
         weekday: date.toLocaleDateString("en-US", { weekday: 'long' }),
         dateDisplay: date.toLocaleDateString("en-US", { day: 'numeric', month: 'short' }),
         
-        time: timeString, // INI YANG AKAN DITAMPILKAN DI CARD
+        time: timeString,
         
         condition: parseCondition(d.weather_desc),
         temp: parseInt(d.t),

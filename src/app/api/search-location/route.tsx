@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-// Pastikan path ini sesuai dengan lokasi file json kamu
 import citiesData from "@/data/cities.json"; 
 
 type City = {
   name: string;
   adm4: string;
-  lat: string; // Ambil sebagai string dari JSON
+  lat: string;
   lon: string;
 };
 

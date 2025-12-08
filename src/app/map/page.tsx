@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { LocationProvider } from "@/context/LocationContext"; // WRAP DENGAN PROVIDER
+import { LocationProvider } from "@/context/LocationContext";
 
 // Import Map secara Dynamic
 const FullInteractiveMap = dynamic(() => import("@/components/map/FullInteractiveMap"), {
@@ -15,7 +15,6 @@ const FullInteractiveMap = dynamic(() => import("@/components/map/FullInteractiv
 });
 
 export default function MapPage() {
-  // PENTING: Halaman ini butuh akses ke Context Location agar tahu user sedang pilih lokasi apa
   return (
     <LocationProvider>
        <FullInteractiveMap />

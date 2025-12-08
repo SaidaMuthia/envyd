@@ -1,7 +1,6 @@
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css"; /* PENTING: Agar peta muncul dengan benar */
+@import "leaflet/dist/leaflet.css";
 
-/* Konfigurasi Source Tailwind v4 */
 @source "../components";
 @source "../app";
 
@@ -27,7 +26,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
 .elegant-scrollbar {
   overflow-x: auto;
   padding-bottom: 12px;
