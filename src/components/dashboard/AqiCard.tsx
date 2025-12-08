@@ -27,7 +27,7 @@ export default function AqiCard() {
     setPercent(p);
   }, [aqi]);
 
-  if (loading || !weather) return <div className="bg-white p-8 rounded-[30px] w-full h-full min-h-60 animate-pulse bg-gray-50"></div>;
+  if (loading || !weather) return <div className="bg-white p-8 rounded-[30px] w-full h-full min-h-60 animate-pulse"></div>;
 
   return (
     <div className="bg-white p-8 rounded-[30px] shadow-[0_20px_25px_-5px_rgba(112,144,176,0.1)] w-full h-full min-h-60 flex flex-col justify-between border border-transparent">
