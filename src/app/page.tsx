@@ -20,8 +20,59 @@ const DashboardMap = dynamic(() => import("@/components/map/DashboardMap"), {
 });
 
 export default function Home() {
-  const { forecast, loading } = useLocation(); // <--- GANTI DISINI
-  
+  const { forecast, loading, activeLocation, setActiveLocation } = useLocation(); // <--- GANTI DISINI
+  function selectLocation(item: { name: string, adm4: string, lat: string, lon: string }) {
+  // Perbarui Context dengan SEMUA data, termasuk koordinat
+  setActiveLocation({
+    name: item.name,
+    adm4: item.adm4,
+    lat: parseFloat(item.lat),
+    lng: parseFloat(item.lon),
+  });
+  const handleMapClick = async (lat: number, lng: number) => { console.log(`[MAP CLICK] Koordinat diterima: Lat: ${lat}`);
+    // 1. Nominatim Reverse Geocoding (Di sini kita mencari nama lokasi)
+    try {
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`;
+        const res = await fetch(nominatimUrl, { headers: { "User-Agent": "WeatherApp/1.0" } });
+        const data = await res.json();
+
+        if (!data || !data.address) {
+            alert("Lokasi tidak dapat diidentifikasi oleh Nominatim.");
+            return;
+        }
+
+        // Ambil nama kota/kecamatan/desa
+        const locationName = data.address.city || data.address.town || data.address.village || data.address.county;
+        
+        if (locationName) {
+            // 2. Cari ADM4 menggunakan API Lokal (search-location)
+            const searchRes = await fetch(`/api/search-location?q=${locationName}`);
+            const searchJson = await searchRes.json();
+
+            if (searchJson.results && searchJson.results.length > 0) {
+                const item = searchJson.results[0];
+                
+                // 3. Update Context (Ini akan memicu fetch cuaca baru)
+                setActiveLocation({
+                    name: item.name,
+                    adm4: item.adm4,
+                    lat: parseFloat(item.lat),
+                    lng: parseFloat(item.lon),
+                });
+                console.log(`✅ Lokasi diubah ke: ${item.name}`);
+
+            } else {
+                alert(`Lokasi "${locationName}" ditemukan (via Nominatim), tetapi BMKG ADM4 tidak ada di database lokal.`);
+            }
+        } else {
+             alert("Lokasi terlalu umum atau di perairan, tidak dapat menemukan nama yang valid.");
+        }
+
+    } catch (error) {
+        console.error("Gagal Map Click Fallback:", error);
+        alert("Terjadi kesalahan saat memproses klik peta.");
+    }
+  };
   const [activeMode, setActiveMode] = useState<"forecast" | "aqi">("forecast");
   const [timeView, setTimeView] = useState<"today" | "tomorrow" | "next7">("today");
   const [isMapWide, setIsMapWide] = useState(false);
@@ -252,8 +303,9 @@ export default function Home() {
 
       <section className="mt-8">
         <h3 className="text-xl font-bold text-[#1B2559] mb-4">Map Overview</h3>
-        <DashboardMap onExpand={() => setIsMapWide(true)} />
-      </section>
+
+        <DashboardMap onExpand={() => setIsMapWide(true)} onLocationSelect={handleMapClick} /> 
+      </section>
     </main>
   );
-}
+  }}

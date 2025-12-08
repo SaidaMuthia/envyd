@@ -5,6 +5,8 @@ import citiesData from "@/data/cities.json";
 type City = {
   name: string;
   adm4: string;
+  lat: string; // Ambil sebagai string dari JSON
+  lon: string;
 };
 
 export async function GET(req: NextRequest) {
@@ -18,7 +20,12 @@ export async function GET(req: NextRequest) {
   // Filter limit 10 hasil agar ringan
   const results = (citiesData as City[])
     .filter((city) => city.name.toUpperCase().includes(query))
-    .slice(0, 10);
+    .slice(0, 15);
 
-  return NextResponse.json({ results });
+  return NextResponse.json({ results: results.map(city => ({
+    name: city.name,
+    adm4: city.adm4,
+    lat: city.lat,
+    lon: city.lon,
+  })) });
 }

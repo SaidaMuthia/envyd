@@ -63,11 +63,11 @@ export default function FullInteractiveMap() {
          2. Padding disamakan: 'px-4 md:px-8' (sama dengan p-4 md:p-8 di page.tsx).
          3. Top padding 'pt-4 md:pt-8' agar posisi vertikal sama persis dengan Dashboard.
       */}
-      <div className="absolute top-0 left-0 right-0 z-1200 w-full pointer-events-none flex justify-center">
-          <div className="w-full max-w-[1920px] px-4 md:px-8 pt-4 md:pt-8 pointer-events-auto">
-             <Header />
-          </div>
-      </div>
+      <div className="fixed top-0 left-0 right-0 z-[1200] w-full flex justify-center">
+                <div className="w-full max-w-[1920px] px-4 md:px-8 pt-4 md:pt-8">
+                    <Header />
+                </div>
+            </div>
 
       {/* TOMBOL BACK 
          Perbaikan: 
@@ -86,6 +86,7 @@ export default function FullInteractiveMap() {
         center={[activeLocation.lat, activeLocation.lng]} 
         zoom={13} 
         className="w-full h-full z-0"
+        style={{ paddingTop: '100px' }}
         zoomControl={false}
       >
         <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

@@ -2,10 +2,10 @@ import { Sun, Cloud, CloudRain, CloudSun } from "lucide-react";
 
 interface WeatherMainProps {
   title: string;
-  temp: number;
+  temp: number | string; 
   condition: string;
-  low: number;
-  high: number;
+  low: number | string;
+  high: number | string;
 }
 
 export default function WeatherMain({ title, temp, condition, low, high }: WeatherMainProps) {
