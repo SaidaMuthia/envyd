@@ -4,7 +4,7 @@
 
 ## 🚀 Fitur Utama
 
-* **Pencarian Lokasi:** Cari kondisi cuaca di kota manapun di seluruh dunia.
+* **Pencarian Lokasi:** Cari kondisi cuaca di Indonesia.
 * **Data Real-time:** Menampilkan suhu, kelembaban, kecepatan angin, indeks UV, dan kualitas udara (AQI).
 * **Prakiraan Cuaca:** Prediksi cuaca untuk beberapa hari ke depan (Forecast).
 * **Desain Responsif:** Tampilan yang optimal baik di desktop maupun perangkat mobile.
