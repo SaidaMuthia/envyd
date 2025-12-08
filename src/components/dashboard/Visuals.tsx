@@ -1,3 +1,5 @@
+import React from 'react';
+
 export function WindCompass() {
   return (
     <div className="relative w-32 h-32 border-4 border-[#E9EDF7] rounded-full flex items-center justify-center bg-white mt-1">
@@ -45,118 +47,140 @@ export function HumidityBars() {
 
 export function VisibilityPyramid() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 w-full py-4">
+    <div className="flex flex-col items-center justify-center gap-2 w-full py-4 scale-110">
         <div className="w-[30%] h-3 bg-gray-200 rounded-full"></div>
-        <div className="w-[45%] h-3 bg-[#4ADE80] opacity-40 rounded-full"></div>
-        <div className="w-[60%] h-3 bg-[#4ADE80] opacity-70 rounded-full"></div>
-        <div className="w-[75%] h-3 bg-[#22C55E] opacity-90 rounded-full"></div>
-        <div className="w-[90%] h-3 bg-[#16A34A] rounded-full shadow-sm"></div>
+        <div className="w-[45%] h-3 bg-[#4ADE80] rounded-full"></div>
+        <div className="w-[60%] h-3 bg-[#22C55E] rounded-full"></div>
+        <div className="w-[75%] h-3 bg-[#16A34A] rounded-full"></div>
+        <div className="w-[90%] h-3 bg-[#15803D] rounded-full shadow-sm"></div>
     </div>
   );
 }
 
-export function UvGauge() {
+// 2. UV GAUGE (DINAMIS)
+export function UvGauge({ uvValue = 0 }: { uvValue?: number }) {
+    // Normalisasi nilai 0-15 menjadi 0-100%
+    const percentage = Math.min((uvValue / 15) * 100, 100);
+    
+    // Hitung posisi sudut untuk Dot Indicator
+    const startAngle = -120;
+    const endAngle = 120;
+    const currentAngle = startAngle + (percentage / 100) * (endAngle - startAngle);
+
+    const radius = 45;
+    const cx = 60; 
+    const cy = 60; 
+    const radians = (currentAngle - 90) * (Math.PI / 180);
+    const dotX = cx + radius * Math.cos(radians);
+    const dotY = cy + radius * Math.sin(radians);
+
     return (
-      // PERBAIKAN: Hapus 'mt-4' agar tidak ada jarak ekstra di atas
-      <div className="relative w-40 h-32 flex items-center justify-center mt-0">
-        <svg className="w-full h-full overflow-visible" viewBox="0 0 120 100">
+      <div className="relative w-32 h-32 flex items-center justify-center mt-2">
+        <svg className="w-full h-full overflow-visible" viewBox="-10 -10 140 120">
           <defs>
-            <linearGradient id="uvGradient" x1="0%" y1="100%" x2="100%" y2="100%" gradientTransform="rotate(0)">
-              <stop offset="0%" stopColor="#FACC15" />
-              <stop offset="40%" stopColor="#FB923C" />
-              <stop offset="70%" stopColor="#EF4444" />
-              <stop offset="100%" stopColor="#7C3AED" />
+            <linearGradient id="uvGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#FACC15" />   
+              <stop offset="35%" stopColor="#FB923C" />  
+              <stop offset="65%" stopColor="#EF4444" />  
+              <stop offset="100%" stopColor="#7C3AED" /> 
             </linearGradient>
           </defs>
-          <path d="M 20 85 A 45 45 0 1 1 100 85" fill="none" stroke="#E5E7EB" strokeWidth="8" strokeLinecap="round" />
-          <path d="M 20 85 A 45 45 0 1 1 100 85" fill="none" stroke="url(#uvGradient)" strokeWidth="8" strokeLinecap="round" />
-          <circle cx="88" cy="35" r="7" fill="#EF4444" stroke="white" strokeWidth="3" className="shadow-md" />
+          
+          {/* Track Latar */}
+          <path d="M 21 82.5 A 45 45 0 1 1 99 82.5" fill="none" stroke="#E5E7EB" strokeWidth="8" strokeLinecap="round" />
+          
+          {/* Track Berwarna (Isi sesuai percentage) */}
+          <path 
+            d="M 21 82.5 A 45 45 0 1 1 99 82.5" 
+            fill="none" 
+            stroke="url(#uvGradient)" 
+            strokeWidth="8" 
+            strokeLinecap="round" 
+            strokeDasharray={`${percentage * 1.85}, 300`} // Trik strokeDasharray untuk memotong path
+          />
+          
+          {/* Dot Indicator Bergerak */}
+          <circle cx={dotX} cy={dotY} r="7" fill="#EF4444" stroke="white" strokeWidth="3" className="shadow-md transition-all duration-700 ease-out" />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-            <span className="text-6xl font-medium text-[#1B1B1E] leading-none tracking-tighter">9</span>
+        
+        {/* Angka Dinamis */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-4">
+            <span className="text-6xl font-medium text-[#1B1B1E] leading-none tracking-tighter">
+                {Math.round(uvValue)}
+            </span>
         </div>
       </div>
     );
 }
 
-// --- PERBAIKAN DI SINI (RainChart) ---
-export function RainChart() {
-    const dataPoints = [40, 25, 75, 20, 65, 30]; 
-    const timeLabels = ["10AM", "11AM", "12AM", "01PM", "02PM", "03PM"];
+// 3. RAIN CHART (DINAMIS DENGAN DATA)
+export function RainChart({ hourlyData = [] }: { hourlyData?: Array<{ time: string; rainfall: number }> }) {
+    // Ambil maksimal 6 data (agar muat di slider)
+    let data = hourlyData.slice(0, 6);
+    
+    // Jika data kosong atau tidak ada hujan sama sekali, tampilkan grafik flat (0)
+    // Jangan pakai dummy random, tapi tampilkan data 0 yang jujur
+    if (data.length === 0) {
+       // Buat 6 slot kosong jika benar-benar tidak ada data array
+       data = Array(6).fill(null).map((_, i) => ({ time: "-", rainfall: 0 }));
+    }
 
-    const points = dataPoints.map((val, i) => {
-        const x = (i / (dataPoints.length - 1)) * 100;
-        const y = 100 - val; 
-        return { x, y, val, label: timeLabels[i] };
-    });
+    // Skala Y: cari nilai max hujan. Minimal 5mm agar grafik tidak error saat semua 0.
+    const maxValue = Math.max(...data.map(d => d.rainfall || 0), 5);
+    
+    const getX = (index: number) => (index * (100 / (Math.max(data.length - 1, 1))));
+    
+    const points = data.map((d, i) => ({
+        x: getX(i),
+        // Y=100 adalah bawah, Y=0 adalah atas.
+        y: 100 - ((d.rainfall || 0) / maxValue * 80), 
+        value: d.rainfall || 0,
+        label: typeof d.time === 'string' ? d.time.split(' ')[0] : d.time // Ambil angka jamnya saja
+    }));
 
-    const buildPath = () => {
-        if (points.length === 0) return "";
-        let d = `M ${points[0].x} ${points[0].y}`;
-        for (let i = 0; i < points.length - 1; i++) {
-            const p0 = points[i];
-            const p1 = points[i + 1];
-            const cp1x = p0.x + (p1.x - p0.x) / 2;
-            const cp2x = p0.x + (p1.x - p0.x) / 2;
-            d += ` C ${cp1x} ${p0.y}, ${cp2x} ${p1.y}, ${p1.x} ${p1.y}`;
-        }
-        return d;
-    };
+    const dPath = points.length > 0 ? `
+      M ${points[0].x} ${points[0].y} 
+      ${points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}
+    ` : 'M 0 0';
 
-    return (
-        <div className="w-full h-48 relative px-5 pt-8 pb-6 select-none">
-            {/* Grid Lines */}
-            <div className="absolute inset-x-5 top-[30%] border-t border-dotted border-gray-400/50"></div>
-            <div className="absolute inset-x-5 top-[60%] border-t border-dotted border-gray-400/50"></div>
-            <div className="absolute inset-x-5 top-[15%] border-t border-dotted border-gray-400/30"></div>
-
-            {/* Area Grafik */}
-            <div className="absolute inset-x-5 top-8 bottom-8">
-                <svg className="absolute inset-0 w-full h-full z-20 pointer-events-none overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <path 
-                        d={buildPath()}
-                        fill="none" 
-                        stroke="#60A5FA" 
-                        strokeWidth="3"
-                        className="drop-shadow-sm"
-                        vectorEffect="non-scaling-stroke" 
-                    />
+return (
+        <div className="w-full h-full relative px-2 pt-2 pb-0 flex flex-col justify-between">
+            <div className="relative w-full flex-1">
+                {/* Background Grid */}
+                <div className="absolute inset-x-0 top-[30%] border-t-[1.5px] border-dotted border-gray-400/50"></div>
+                <div className="absolute inset-x-0 top-[60%] border-t-[1.5px] border-dotted border-gray-400/50"></div>
+                
+<svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    {/* Garis dan Bar Hujan (tetap SVG agar stretch sesuai container) */}
+                    {points.map((p, i) => (
+                        <g key={`bar-${i}`}>
+                            <line x1={p.x} y1={p.y} x2={p.x} y2="100" stroke="#BFDBFE" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+                        </g>
+                    ))}
+                    <path d={dPath} fill="none" stroke="#60A5FA" strokeWidth="2" className="drop-shadow-sm" />
                 </svg>
-
+                
+                {/* Titik Data menggunakan DIV agar tidak stretch/gepeng */}
                 {points.map((p, i) => (
                     <div 
-                        key={i} 
-                        className="absolute bottom-0 w-2 bg-[#BFDBFE]/50 rounded-t-full z-10 flex flex-col items-center group hover:bg-[#BFDBFE] transition-colors"
+                        key={`dot-${i}`} 
+                        className="absolute w-[5px] h-[5px] bg-white border-[1.5px] border-[#3B82F6] rounded-full z-10"
                         style={{ 
-                            left: `calc(${p.x}% - 4px)`, 
-                            height: `${p.val}%` 
+                            left: `${p.x}%`, 
+                            top: `${p.y}%`,
+                            transform: 'translate(-50%, -50%)' 
                         }}
-                    >
-                        <div className="absolute -top-1.5 w-1.5 h-3 bg-[#1B1B1E] rounded-full z-30"></div>
-                        <div 
-                            className="absolute bg-white border-[3px] border-[#60A5FA] rounded-full z-40 w-3.5 h-3.5 shadow-sm transform transition-transform group-hover:scale-125"
-                            style={{ top: '-14px' }}
-                        ></div>
-                        <div className="absolute -top-10 opacity-0 group-hover:opacity-100 transition-opacity bg-[#1B1B1E] text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-50">
-                           {p.val}%
-                        </div>
-                    </div>
+                    />
                 ))}
             </div>
 
-            {/* LABEL WAKTU DIPERKECIL DI SINI */}
-            <div className="absolute inset-x-5 bottom-0 h-6">
-                 {points.map((p, i) => (
-                    <div 
-                        key={i}
-                        // GANTI: text-[10px] -> text-[8px]
-                        // HAPUS: tracking-wider (agar lebih rapat)
-                        className="absolute bottom-1 text-[8px] font-bold text-[#A3AED0] uppercase transform -translate-x-1/2"
-                        style={{ left: `${p.x}%` }}
-                    >
+            {/* Label Waktu (Satu-satunya label yang aktif) */}
+            <div className="flex justify-between w-full mt-1">
+                {points.map((p, i) => (
+                    <div key={i} className="text-[8px] text-[#A3AED0] font-bold uppercase tracking-wider text-center" style={{ width: '16%' }}>
                         {p.label}
                     </div>
-                 ))}
+                ))}
             </div>
         </div>
     );

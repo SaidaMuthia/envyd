@@ -1,8 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { LocationProvider } from "@/context/LocationContext"; // WRAP DENGAN PROVIDER
 
-// Import Map secara Dynamic agar tidak error "window is not defined"
+// Import Map secara Dynamic
 const FullInteractiveMap = dynamic(() => import("@/components/map/FullInteractiveMap"), {
   ssr: false,
   loading: () => (
@@ -14,5 +15,10 @@ const FullInteractiveMap = dynamic(() => import("@/components/map/FullInteractiv
 });
 
 export default function MapPage() {
-  return <FullInteractiveMap />;
+  // PENTING: Halaman ini butuh akses ke Context Location agar tahu user sedang pilih lokasi apa
+  return (
+    <LocationProvider>
+       <FullInteractiveMap />
+    </LocationProvider>
+  );
 }
