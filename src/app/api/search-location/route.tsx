@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import citiesData from "@/data/cities.json"; 
 
-// UPDATE: Sesuaikan tipe dengan data asli di JSON (number)
+// PERBAIKAN: Ubah tipe lat & lon menjadi number sesuai isi JSON
 type City = {
   name: string;
   adm4: string;
-  lat: string; // Ambil sebagai string dari JSON
-  lon: string;
+  lat: number; 
+  lon: number;
 };
 
 export async function GET(req: NextRequest) {
@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Filter limit 15 hasil agar ringan
+  // Casting 'as City[]' aman karena kita sudah sesuaikan tipe di atas
   const results = (citiesData as City[])
     .filter((city) => city.name.toUpperCase().includes(query))
     .slice(0, 15);
@@ -25,8 +26,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ results: results.map(city => ({
     name: city.name,
     adm4: city.adm4,
-    // Kita kirim sebagai number (lebih standar untuk koordinat)
-    // Jika frontend WAJIB string, ubah jadi: String(city.lat)
     lat: city.lat,
     lon: city.lon,
   })) });
