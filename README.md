@@ -1,10 +1,6 @@
 # Envyd 🌤️
 
-<p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSaidaMuthia%2Fenvyd&env=NEXT_PUBLIC_BMKG_API_KEY">
-    <img src="https://vercel.com/button" alt="Deploy with Vercel">
-  </a>
-</p>
+**Website Live:** [Kunjungi EnvyD di Vercel](https://envyd.vercel.app/)
 
 [Lihat Aplikasi Live di Vercel](https://envyd.vercel.app/)
 
