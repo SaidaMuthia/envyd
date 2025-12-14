@@ -18,7 +18,7 @@ export default function ForecastRow({ day, condition, temp }: ForecastRowProps) 
   };
 
   return (
-    <div className="flex items-center justify-between bg-white p-4 rounded-[20px] shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex items-center justify-between bg-white py-3 px-4 rounded-[20px] shadow-sm hover:shadow-md transition-shadow">
       <span className="font-bold text-[#2B3674] w-24">{day}</span>
       <div className="flex items-center gap-3 flex-1">
         {getIcon()}

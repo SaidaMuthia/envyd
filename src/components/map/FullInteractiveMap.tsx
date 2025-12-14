@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { ArrowLeft, X } from "lucide-react"; 
@@ -14,10 +14,22 @@ import WeatherMain from "@/components/dashboard/WeatherMain";
 import StatCard from "@/components/dashboard/StatCard";
 import { WindCompass, FeelsLikeSlider, HumidityBars } from "@/components/dashboard/Visuals";
 
+function ChangeView({ center }: { center: [number, number] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Menggunakan flyTo untuk transisi yang mulus ke lokasi baru
+    map.flyTo(center, map.getZoom(), {
+      duration: 1.5 // Durasi animasi dalam detik
+    });
+  }, [center, map]); // map ditambahkan sebagai dependensi, meskipun jarang berubah
+
+  return null; // Komponen ini tidak merender apa-apa secara visual
+}
 export default function FullInteractiveMap({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { activeLocation, setActiveLocation, weather } = useLocation();
+  const { activeLocation, setActiveLocation, weather, loading } = useLocation();
   const [customIcon, setCustomIcon] = useState<L.Icon | null>(null);
 
   // Fix SSR: Init icon di client side
@@ -88,6 +100,8 @@ export default function FullInteractiveMap({ onClose }: { onClose?: () => void }
             zoomControl={false}
           >
             <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+            <ChangeView center={[activeLocation.lat, activeLocation.lng]} />
             <MapClickHandler />
             <Marker position={[activeLocation.lat, activeLocation.lng]} icon={customIcon} />
           </MapContainer>
@@ -126,7 +140,15 @@ export default function FullInteractiveMap({ onClose }: { onClose?: () => void }
             </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 elegant-scrollbar">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 elegant-scrollbar relative">
+            {loading && (
+                <div className="absolute inset-0 z-50 bg-[#F4F7FE]/70 backdrop-blur-sm flex items-center justify-center rounded-b-[30px] rounded-t-lg">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-4 border-[#2B3674] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-[#2B3674] font-bold text-sm">Loading Data...</p>
+                    </div>
+                </div>
+            )}
             <WeatherMain 
                 title="Current Weather" 
                 temp={currentData.temp} 

@@ -59,20 +59,39 @@ export function LocationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function fetchData() {
-      if (!activeLocation.adm4) return;
+      let apiUrl = "";
+      
+      // 1. Prioritaskan fetch berdasarkan adm4 (dari search bar/default)
+      if (activeLocation.adm4) {
+        apiUrl = `/api/weather?adm4=${activeLocation.adm4}`;
+      } 
+      // 2. Gunakan lat/lng jika adm4 kosong (dari map click)
+      else if (activeLocation.lat && activeLocation.lng) {
+        // Asumsi API endpoint Anda menerima lat dan lon
+        apiUrl = `/api/weather?lat=${activeLocation.lat}&lon=${activeLocation.lng}`;
+      } 
+      // 3. Jika tidak ada data yang valid, hentikan
+      else {
+        return; 
+      }
+
       setLoading(true);
+      setWeather(null); 
+      setForecast(defaultForecast);
       try {
-        const res = await fetch(`/api/weather?adm4=${activeLocation.adm4}`);
+        const res = await fetch(apiUrl);
         const data = await res.json();
         
         if (data.current) setWeather(data.current);
         if (data.forecast) setForecast(data.forecast);
         
         if (data.location) {
+          // Update lat, lon, dan nama lokasi (nama yang lebih baik dari backend)
           setActiveLocation(prev => ({
             ...prev,
             lat: parseFloat(data.location.lat),
-            lng: parseFloat(data.location.lon)
+            lng: parseFloat(data.location.lon),
+            name: data.location.name || prev.name // Gunakan nama yang dikirim backend
           }));
         }
       } catch (error) {
@@ -82,7 +101,8 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       }
     }
     fetchData();
-  }, [activeLocation.adm4]);
+    // Perbarui dependencies agar terpicu saat lat/lng berubah
+  }, [activeLocation.adm4, activeLocation.lat, activeLocation.lng]);
 
   return (
     <LocationContext.Provider value={{ activeLocation, setActiveLocation, weather, forecast, loading }}>

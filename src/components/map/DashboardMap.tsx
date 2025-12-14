@@ -3,7 +3,7 @@
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; 
 import { useLocation } from "@/context/LocationContext"; 
 import { Maximize2 } from "lucide-react"; 
@@ -49,14 +49,24 @@ export default function DashboardMap({
     
   const router = useRouter();
   const { activeLocation } = useLocation();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     window.dispatchEvent(new Event("resize"));
   }, [isExpanded]);
 
   const lat = activeLocation.lat || -5.1477;
   const lng = activeLocation.lng || 119.4327;
-  const position: [number, number] = [lat, lng]; 
+  const position: [number, number] = [lat, lng];
+  
+  if (!isClient) {
+    return (
+      <div className={`relative w-full rounded-[30px] overflow-hidden shadow-sm border border-white transition-all duration-500 bg-gray-100 ${isExpanded ? 'h-full' : 'h-[380px]'} flex items-center justify-center text-sm text-[#A3AED0]`}>
+        Loading Map...
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full rounded-[30px] overflow-hidden shadow-sm border border-white transition-all duration-500 bg-gray-100 ${isExpanded ? 'h-full' : 'h-[380px]'}`}>

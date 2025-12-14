@@ -33,6 +33,20 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const safeForecast = (loading || forecast.length === 0) ? [] : forecast;
 
+    const handleMapLocationSelect = (lat: number, lng: number) => {
+        // 1. Update Context dengan koordinat baru (ini akan memicu fetch data baru)
+        setActiveLocation({
+            name: `Lokasi Peta (${lat.toFixed(2)}, ${lng.toFixed(2)})`,
+            lat: lat,
+            lng: lng,
+            adm4: "" // Set adm4 kosong untuk memicu Reverse Geocoding di backend
+        });
+        
+        // 2. Reset tampilan ke "Today" dan mode "Forecast"
+        setTimeView("today");
+        setActiveMode("forecast"); 
+    };
+
   const handleTabChange = (view: "today" | "tomorrow" | "next2") => {
     setTimeView(view);
     if (view === 'next2') setExpandedDays([0]); 
@@ -262,7 +276,8 @@ export default function Home() {
 
       <section className="mt-8">
         <h3 className="text-xl font-bold text-[#1B2559] mb-4">Map Overview</h3>
-        <DashboardMap onExpand={() => setIsMapWide(true)} />
+        <DashboardMap onExpand={() => setIsMapWide(true)}
+        onLocationSelect={handleMapLocationSelect} />
       </section>
     </main>
   );

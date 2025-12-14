@@ -28,8 +28,8 @@ export default function Header() {
     setActiveLocation({
       name: item.name,
       adm4: item.adm4,
-      lat: 0, 
-      lng: 0
+      lat: item.lat, 
+      lng: item.lon
     });
     setQuery("");
     setResults([]);
