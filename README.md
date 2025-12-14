@@ -1,6 +1,12 @@
 # Envyd 🌤️
 
-[![Vercel Deployment Status](https://vercel.com/api/deployments/v1/deployments?meta=envyd&style=flat-square)](https://envyd.vercel.app/)
+<p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FSaidaMuthia%2Fenvyd&env=NEXT_PUBLIC_BMKG_API_KEY">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel">
+  </a>
+</p>
+
+[Lihat Aplikasi Live di Vercel](https://envyd.vercel.app/)
 
 **Envyd** adalah aplikasi dashboard cuaca modern yang dibangun menggunakan [Next.js](https://nextjs.org/). Aplikasi ini menyediakan informasi cuaca dan kualitas udara untuk memantau kondisi lingkungan di Indonesia.
 
