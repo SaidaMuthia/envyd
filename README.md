@@ -2,8 +2,6 @@
 
 **Website Live:** [Kunjungi EnvyD di Vercel](https://envyd.vercel.app/)
 
-[Lihat Aplikasi Live di Vercel](https://envyd.vercel.app/)
-
 **Envyd** adalah aplikasi dashboard cuaca modern yang dibangun menggunakan [Next.js](https://nextjs.org/). Aplikasi ini menyediakan informasi cuaca dan kualitas udara untuk memantau kondisi lingkungan di Indonesia.
 
 ## 🚀 Fitur Utama
