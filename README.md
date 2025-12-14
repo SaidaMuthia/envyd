@@ -34,7 +34,7 @@ Jika Anda ingin menjalankan proyek ini di mesin lokal Anda:
 
 1.  **Clone repositori ini:**
     ```bash
-    git clone [https://github.com/SaidaMuthia/envyd.git](https://github.com/SaidaMuthia/envyd.git)
+    git clone https://github.com/SaidaMuthia/envyd.git
     cd envyd
     ```
 
