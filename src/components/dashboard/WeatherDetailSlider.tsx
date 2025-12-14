@@ -6,6 +6,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import { VisibilityPyramid, UvGauge } from "@/components/dashboard/Visuals";
 import { useLocation } from "@/context/LocationContext";
 
+
 const getUvStatus = (uvIndex: number) => {
     if (uvIndex < 3) return "Rendah (Low)";
     if (uvIndex < 6) return "Sedang (Moderate)";
@@ -29,7 +30,7 @@ export default function WeatherDetailsSlider() {
       ? safeData.visibility.toFixed(1)
       : (loading ? "..." : "0.0");
 
-  const currentUvIndex = (weather?.uv !== undefined) ? weather.uv : 0; 
+  const currentUvIndex = (weather?.uv !== undefined && weather.uv !== null) ? Number(weather.uv) : 0; 
   const uvStatus = getUvStatus(currentUvIndex);
   const uvDesc = currentUvIndex >= 8 
         ? "Wajib gunakan pelindung." 

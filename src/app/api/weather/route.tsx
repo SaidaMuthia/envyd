@@ -1,4 +1,4 @@
-// src/app/api/weather/route.tsx (KODE YANG DIREVISI)
+
 
 import { NextRequest, NextResponse } from "next/server";
 import { default as citiesData } from '@/data/cities.json';
@@ -6,17 +6,11 @@ import { default as citiesData } from '@/data/cities.json';
 export const dynamic = 'force-dynamic'; 
 export const revalidate = 0;
 
-// (Semua fungsi utility seperti getAqiStatus, parseCondition, dll. tetap di sini, 
-//  saya tidak menampilkannya untuk menghemat ruang, tetapi JANGAN HAPUS)
-
-// ... (utility functions Anda tetap di sini) ...
 
 function findNearestAdm4(targetLat: number, targetLon: number): { adm4: string, name: string } | null {
     let closest: { adm4: string, lat: number, lon: number, name: string } | null = null;
     let minDistance = Infinity;
 
-    // Menggunakan jarak Euclidean sederhana untuk menemukan titik terdekat
-    // Catatan: Harus memastikan citiesData sudah diimpor.
     for (const city of citiesData as any) {
         const dLat = city.lat - targetLat;
         const dLon = city.lon - targetLon;
@@ -24,7 +18,7 @@ function findNearestAdm4(targetLat: number, targetLon: number): { adm4: string, 
 
         if (distanceSq < minDistance) {
             minDistance = distanceSq;
-            closest = city as any; // Cast untuk menyamakan tipe
+            closest = city as any; 
         }
     }
 
@@ -75,10 +69,10 @@ function parseWindDirection(code: string) {
         case 'WNW': return 'West-Northwest';
         case 'NW': return 'Northwest';
         case 'NNW': return 'North-Northwest';
-        // Tambahkan kasus untuk singkatan tak terduga yang mungkin dikirim BMKG
-        case 'VAR': return 'Variable'; // Contoh penanganan kode tak terduga
+
+        case 'VAR': return 'Variable'; 
         case 'CALM': return 'Calm';
-        default: return d; // Jika tidak cocok, kembalikan singkatan asli
+        default: return d; 
     }
 }
 
@@ -99,7 +93,6 @@ function findDailyMinMax(dayData: any[]) {
 }
 
 
-// src/app/api/weather/route.tsx (Fungsi GET yang direvisi)
 
 export async function GET(req: NextRequest) {
     try {
@@ -140,18 +133,36 @@ export async function GET(req: NextRequest) {
         // 3. Open-Meteo AQI & UV (Tetap dipertahankan karena BMKG tidak menyediakannya)
         let aqiData = { aqi: 0, status: "-" };
         let uvIndex = 0; 
+        let latBmkg: number | undefined;
+        let lonBmkg: number | undefined;
+
+
         if (dataLokasi?.lokasi?.lat && dataLokasi?.lokasi?.lon) {
             try {
-                const latBmkg = parseFloat(String(dataLokasi.lokasi.lat).replace(',', '.'));
-                const lonBmkg = parseFloat(String(dataLokasi.lokasi.lon).replace(',', '.'));
-                const omUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latBmkg}&longitude=${lonBmkg}&current=us_aqi,uv_index&timezone=auto`;
-                const omRes = await fetch(omUrl, { cache: 'no-store' });
-                const omJson = await omRes.json();
-                if (omJson.current) {
-                    aqiData = { aqi: omJson.current.us_aqi, status: getAqiStatus(omJson.current.us_aqi) };
-                    uvIndex = omJson.current.uv_index;
+                latBmkg = parseFloat(String(dataLokasi.lokasi.lat).replace(',', '.'));
+                lonBmkg = parseFloat(String(dataLokasi.lokasi.lon).replace(',', '.'));
+                console.log(`[UV DEBUG] Trying to fetch UV for: ${latBmkg}, ${lonBmkg}`);
+                
+                if (!isNaN(latBmkg) && !isNaN(lonBmkg)) {
+                    const omUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latBmkg}&longitude=${lonBmkg}&current=us_aqi,uv_index&timezone=auto`;
+                    const omRes = await fetch(omUrl, { cache: 'no-store' });
+                    const omJson = await omRes.json();
+                    
+                    // >>> LOG KRITIS: Tampilkan seluruh objek JSON dari Open-Meteo <<<
+                    console.log("[UV API RESPONSE]", omJson);
+                    // >>> AKHIR LOG KRITIS <<<
+
+                    if (omJson.current) {
+                        aqiData = { aqi: omJson.current.us_aqi, status: getAqiStatus(omJson.current.us_aqi) };
+                        uvIndex = omJson.current.uv_index;
+                        console.log(`[UV SUCCESS] UV Index updated to: ${uvIndex}`); // Tambahkan log sukses
+                    } else {
+                        console.log("[UV FAIL] Open-Meteo 'current' object missing.");
+                    }
                 }
-            } catch (e) { console.error("Open-Meteo Error:", e); }
+            } catch (e) { 
+                console.error("Open-Meteo or Parsing Error:", e); 
+            }
         }
 
         const nowTime = new Date();
@@ -238,7 +249,7 @@ export async function GET(req: NextRequest) {
                 visibility: parseInt(d.vs) ? parseInt(d.vs)/1000 : 0,
                 humidity: parseInt(d.hu), 
                 feelsLike: calculateFeelsLike(parseInt(d.t), parseInt(d.hu)), 
-                uv: 0,
+                uv: isToday ? uvIndex : 0,
                 hourlyRainfall: dayData.map((h: any) => ({ 
                     time: new Date(h.local_datetime).toLocaleTimeString("en-US", { hour: 'numeric', hour12: true }),
                     rainfall: parseFloat(h.ch) || 0 
@@ -246,7 +257,6 @@ export async function GET(req: NextRequest) {
             };
         });
 
-        // Ganti nama lokasi BMKG dengan nama yang lebih spesifik dari cities.json (jika ditemukan dari map click)
         const finalLocationName = locationNameFromMap || dataLokasi.lokasi.name;
 
         return NextResponse.json({
